@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ch04: Multi-Agent Orchestration: Designing for Fault Tolerance - AI Engineering Series</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f2ed;--surface:#fff;--border:#e2e2da;
+  --text:#111;--muted:#666660;--green:#c8f135;--green-dk:#a8d010;
+  --dot:#d8d8d0;--code-bg:#1e1e2e;--code-text:#cdd6f4;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
+  line-height:1.75;font-size:16px;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;
+  background-image:radial-gradient(circle,var(--dot) 1px,transparent 1px);
+  background-size:28px 28px;pointer-events:none;z-index:0;opacity:.45}
+nav{position:sticky;top:0;z-index:100;background:rgba(242,242,237,.9);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  padding:0 48px;height:60px;display:flex;align-items:center;
+  justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;
+  font-family:'Syne',sans-serif;font-size:17px;font-weight:800;
+  color:var(--text);text-decoration:none}
+.nav-logo-icon{width:32px;height:32px;background:var(--text);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav-back{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;
+  border:1.5px solid var(--border);padding:6px 14px;border-radius:8px;
+  background:var(--surface);transition:border-color .15s,color .15s}
+.nav-back:hover{border-color:var(--text);color:var(--text)}
+.page-wrap{position:relative;z-index:1;max-width:780px;margin:0 auto;
+  padding:60px 48px 100px}
+.ch-header{margin-bottom:52px}
+.ch-num-label{font-size:12px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:12px;
+  display:flex;align-items:center;gap:10px}
+.ch-num-label::before{content:"";width:20px;height:2px;
+  background:var(--green);display:inline-block;border-radius:2px}
+h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);
+  font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:20px}
+.content h2{font-family:'Syne',sans-serif;font-size:1.45rem;font-weight:800;
+  margin:52px 0 14px;letter-spacing:-.02em;
+  padding-bottom:10px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.05rem;font-weight:700;margin:32px 0 10px}
+.content p{margin-bottom:18px;color:#2a2a2a}
+.content ul,.content ol{margin:0 0 18px 24px}
+.content li{margin-bottom:6px;color:#2a2a2a}
+.content strong{color:var(--text);font-weight:700}
+.content hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+.content blockquote{background:var(--surface);
+  border:1.5px solid var(--border);border-left:4px solid var(--green);
+  border-radius:0 10px 10px 0;padding:16px 20px;margin:24px 0;
+  font-size:.95rem;color:var(--muted)}
+.content table{width:100%;border-collapse:collapse;margin:24px 0;
+  font-size:13.5px;background:var(--surface);
+  border-radius:10px;overflow:hidden;border:1.5px solid var(--border)}
+.content th{background:var(--text);color:#fff;padding:10px 14px;
+  text-align:left;font-weight:700;font-size:12px;letter-spacing:.04em}
+.content td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.content tr:last-child td{border-bottom:none}
+.content tr:nth-child(even) td{background:#fafaf6}
+.content code{background:#ebebeb;border-radius:4px;
+  padding:2px 6px;font-size:.85rem;font-family:'JetBrains Mono','Fira Code',monospace;
+  color:#c0392b}
+.content pre{background:var(--code-bg);border-radius:12px;
+  padding:24px;margin:24px 0;overflow-x:auto;
+  border:1.5px solid #313244;box-shadow:0 4px 24px rgba(0,0,0,.15)}
+.content pre code{background:none;color:var(--code-text);
+  font-size:.85rem;padding:0;border-radius:0}
+.diagram-wrap{margin:32px 0;background:var(--surface);
+  border:1.5px solid var(--border);border-radius:14px;
+  padding:32px 24px;overflow-x:auto;
+  box-shadow:3px 3px 0 var(--border)}
+.diagram-wrap svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tldr-box{background:#f0fde4;border:1.5px solid #bbf7d0;border-left:4px solid var(--green-dk);
+  border-radius:10px;padding:20px 24px;margin:0 0 40px}
+.tldr-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--green-dk);margin-bottom:10px}
+.tldr-box ul{margin:0 0 0 18px}
+.tldr-box li{font-size:.9rem;color:#1a2e05;margin-bottom:5px}
+.gotcha-box{background:#fff5f5;border:1.5px solid #fecaca;border-left:4px solid #dc2626;
+  border-radius:10px;padding:20px 24px;margin:32px 0}
+.gotcha-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:#dc2626;margin-bottom:10px}
+.gotcha-box ol{margin:0 0 0 18px}
+.gotcha-box li{font-size:.9rem;color:#450a0a;margin-bottom:6px;line-height:1.6}
+.chapter-nav{display:flex;justify-content:space-between;
+  margin-top:80px;padding-top:32px;border-top:1.5px solid var(--border);gap:16px}
+.ch-nav-btn{text-decoration:none;color:var(--text);
+  border:1.5px solid var(--border);border-radius:10px;
+  padding:14px 20px;background:var(--surface);
+  font-size:13px;font-weight:600;transition:all .15s;max-width:48%}
+.ch-nav-btn:hover{border-color:var(--text);box-shadow:3px 3px 0 var(--text)}
+.ch-nav-next{text-align:right;margin-left:auto}
+.nav-dir{font-size:11px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.07em;margin-bottom:4px}
+@media(max-width:680px){
+  nav{padding:0 20px}.page-wrap{padding:40px 20px 60px}
+  .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">
+    <div class="nav-logo-icon">&#129302;</div>AI Engineering
+  </a>
+  <a href="../index.html" class="nav-back">&larr; All Chapters</a>
+</nav>
+<main class="page-wrap">
+  <header class="ch-header">
+    <div class="ch-num-label">Chapter 04</div>
+    <h1>Multi-Agent Orchestration: Designing for Fault Tolerance</h1>
+  </header>
+  <div class="content">
+<div class="tldr-box">
+<h3>TL;DR</h3>
+<ul>
+<li>Multi-agent pipelines multiply your failure surface: one stuck agent blocks everything downstream.</li>
+<li>Day One: a sequential pipeline where agent B calls agent A's output directly - simple, brittle.</li>
+<li>Production: async task queues between agents, per-agent circuit breakers, partial result caching, and compensation logic for side effects.</li>
+<li>The orchestrator pattern: a supervisor agent that assigns tasks, monitors health, and re-routes on failure.</li>
+<li>Key insight: agents are microservices. Apply the same fault-tolerance patterns you already know.</li>
+</ul>
+</div>
+
+<h2>Why multi-agent systems fail differently</h2>
+<p>A single agent has one failure surface: the LLM call and its tools. A five-agent pipeline has five failure surfaces plus the communication layer between them. Failures compound: if Agent 3 fails after Agents 1 and 2 have already written to external systems, you have partial state in Jira, Confluence, and Slack simultaneously.</p>
+<blockquote>A chain is only as reliable as its weakest link. In a 5-agent pipeline with each agent at 99% reliability, the pipeline succeeds only 95% of the time. At 95% per agent: 77% success rate.</blockquote>
+<hr>
+
+<h2>The running example: Incident Response Pipeline</h2>
+<p>When an alert fires, a five-agent pipeline kicks off: triage the severity, find the runbook, create a Jira ticket, notify Slack, and update the Confluence status page.</p>
+
+<div class="diagram-wrap">
+<svg viewBox="0 0 680 140" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="arr-m" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker></defs>
+<rect x="10" y="50" width="100" height="44" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="60" y="69" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Triage Agent</text>
+<text x="60" y="86" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">classify severity</text>
+<line x1="110" y1="72" x2="128" y2="72" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m)"/>
+<rect x="130" y="50" width="100" height="44" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="180" y="69" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Search Agent</text>
+<text x="180" y="86" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">find runbook</text>
+<line x1="230" y1="72" x2="248" y2="72" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m)"/>
+<rect x="250" y="50" width="100" height="44" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
+<text x="300" y="69" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#92400e">Jira Agent</text>
+<text x="300" y="86" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">create P1 ticket</text>
+<line x1="350" y1="72" x2="368" y2="72" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m)"/>
+<rect x="370" y="50" width="100" height="44" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="420" y="69" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Slack Agent</text>
+<text x="420" y="86" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">notify on-call</text>
+<line x1="470" y1="72" x2="488" y2="72" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m)"/>
+<rect x="490" y="50" width="120" height="44" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="550" y="69" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Confluence Agent</text>
+<text x="550" y="86" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">update status page</text>
+<text x="340" y="125" text-anchor="middle" font-family="Caveat,cursive" font-size="11" fill="#dc2626">If Jira Agent fails: Slack + Confluence never run</text>
+</svg>
+</div>
+
+<h2>Day One: sequential pipeline</h2>
+<pre><code class="language-python"># pipeline_v1.py - simple, breaks on any agent failure
+def run_incident_pipeline(alert):
+    severity = triage_agent.run(alert)
+    runbook  = search_agent.run(alert, severity)
+    ticket   = jira_agent.run(alert, runbook)     # if this fails, steps 4+5 never run
+    slack_agent.run(alert, ticket)
+    confluence_agent.run(alert, ticket)
+    return {"ticket_id": ticket.id}</code></pre>
+
+<h2>Production: the orchestrator pattern</h2>
+<p>The orchestrator maintains a task graph, dispatches work to stateless sub-agent workers via a queue, and propagates failures gracefully by marking dependents as SKIPPED rather than crashing.</p>
+
+<pre><code class="language-python"># orchestrator.py
+import asyncio
+from dataclasses import dataclass, field
+from enum import Enum
+
+class TaskStatus(Enum):
+    PENDING = "pending"
+    RUNNING = "running"
+    DONE    = "done"
+    FAILED  = "failed"
+    SKIPPED = "skipped"
+
+@dataclass
+class AgentTask:
+    id: str
+    agent_type: str
+    input: dict
+    depends_on: list = field(default_factory=list)
+    status: TaskStatus = TaskStatus.PENDING
+    result: dict = None
+    retries: int = 0
+    max_retries: int = 3
+
+class Orchestrator:
+    def __init__(self, workers):
+        self.workers = workers
+        self.tasks = {}
+        self.results = {}
+
+    async def run(self):
+        while not self._all_terminal():
+            ready = self._get_ready_tasks()
+            if ready:
+                await asyncio.gather(*[self._execute(t) for t in ready])
+            else:
+                await asyncio.sleep(0.1)
+        return self.results
+
+    def _all_terminal(self):
+        terminal = {TaskStatus.DONE, TaskStatus.FAILED, TaskStatus.SKIPPED}
+        return all(t.status in terminal for t in self.tasks.values())
+
+    def _get_ready_tasks(self):
+        ready = []
+        for task in self.tasks.values():
+            if task.status != TaskStatus.PENDING:
+                continue
+            deps_done = all(self.tasks[d].status == TaskStatus.DONE for d in task.depends_on)
+            if deps_done:
+                ready.append(task)
+        return ready
+
+    async def _execute(self, task):
+        task.status = TaskStatus.RUNNING
+        worker = self.workers[task.agent_type]
+        try:
+            result = await worker.run(task.input, self.results)
+            task.result = result
+            task.status = TaskStatus.DONE
+            self.results[task.id] = result
+        except Exception as e:
+            task.retries += 1
+            if task.retries &lt;= task.max_retries:
+                task.status = TaskStatus.PENDING   # re-queue
+            else:
+                task.status = TaskStatus.FAILED
+                self._skip_dependents(task.id)
+
+    def _skip_dependents(self, failed_id):
+        for task in self.tasks.values():
+            if failed_id in task.depends_on and task.status == TaskStatus.PENDING:
+                task.status = TaskStatus.SKIPPED
+                self._skip_dependents(task.id)   # cascade</code></pre>
+
+<h3>Compensation: undoing partial work</h3>
+<pre><code class="language-python"># If Jira agent succeeds but Slack agent fails, delete the orphaned ticket.
+COMPENSATIONS = {
+    "jira_task":       ("delete_jira_ticket", lambda r: {"ticket_id": r["id"]}),
+    "confluence_task": ("revert_confluence",  lambda r: {"page_id":   r["page_id"]}),
+}
+
+async def compensate(orchestrator):
+    done_tasks = [t for t in orchestrator.tasks.values()
+                  if t.status == TaskStatus.DONE and t.id in COMPENSATIONS]
+    for task in reversed(done_tasks):
+        comp_fn, args_fn = COMPENSATIONS[task.id]
+        await orchestrator.workers["compensator"].run(
+            {"action": comp_fn, "args": args_fn(task.result)}
+        )</code></pre>
+
+<h2>Day One vs Production</h2>
+<table>
+<thead><tr><th>Dimension</th><th>Day One</th><th>Production</th></tr></thead>
+<tbody>
+<tr><td>Execution model</td><td>Sequential function calls</td><td>Async task graph with orchestrator</td></tr>
+<tr><td>On agent failure</td><td>Exception propagates, pipeline crashes</td><td>Retry up to max_retries, then FAILED</td></tr>
+<tr><td>Downstream agents</td><td>Never run</td><td>SKIPPED gracefully</td></tr>
+<tr><td>Partial state</td><td>Left dangling in Jira/Slack</td><td>Compensation rolls back completed tasks</td></tr>
+<tr><td>Parallelism</td><td>None - strictly sequential</td><td>Independent branches run in parallel</td></tr>
+<tr><td>Observability</td><td>None</td><td>Per-task status, retry count, latency</td></tr>
+</tbody>
+</table>
+
+<div class="gotcha-box">
+<h3>&#9888; Common Mistakes &amp; Gotchas</h3>
+<ol>
+<li><strong>Cascading failures without SKIPPED state.</strong> If a failed agent's dependents are left as PENDING forever, your orchestrator loops. Always propagate failure to dependents explicitly.</li>
+<li><strong>Infinite retry loops.</strong> An agent retrying indefinitely starves the queue. Always enforce <code>max_retries</code> and move to FAILED after exhaustion.</li>
+<li><strong>No partial result caching.</strong> If a 5-agent pipeline fails at step 4, rerunning from step 1 wastes money. Cache each agent's output by <code>run_id + task_id</code> and resume from the checkpoint.</li>
+<li><strong>Compensation without idempotency.</strong> If compensation itself fails halfway through, you need idempotent compensation actions. Use the idempotency-key pattern from Chapter 01.</li>
+<li><strong>Treating all failures as transient.</strong> A Jira 401 auth error should not be retried 3 times. Classify errors before retrying.</li>
+</ol>
+</div>
+
+  <nav class="chapter-nav">
+    <a class="ch-nav-btn" href="chapter-03-hidden-costs-llm-calls-production.html"><div class="nav-dir">&larr; Previous</div>The Hidden Costs of LLM Calls in Production</a>
+    <a class="ch-nav-btn ch-nav-next" href="chapter-05-rag-at-scale-single-pdf-to-100m-documents.html"><div class="nav-dir">Next &rarr;</div>RAG at Scale: From a Single PDF to 100M Documents</a>
+  </nav>
+  </div>
+</main>
+</body>
+</html>
