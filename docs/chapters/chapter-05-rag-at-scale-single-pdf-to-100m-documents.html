@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ch05: RAG at Scale: From a Single PDF to 100M Documents - AI Engineering Series</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f2ed;--surface:#fff;--border:#e2e2da;
+  --text:#111;--muted:#666660;--green:#c8f135;--green-dk:#a8d010;
+  --dot:#d8d8d0;--code-bg:#1e1e2e;--code-text:#cdd6f4;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
+  line-height:1.75;font-size:16px;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;
+  background-image:radial-gradient(circle,var(--dot) 1px,transparent 1px);
+  background-size:28px 28px;pointer-events:none;z-index:0;opacity:.45}
+nav{position:sticky;top:0;z-index:100;background:rgba(242,242,237,.9);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  padding:0 48px;height:60px;display:flex;align-items:center;
+  justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;
+  font-family:'Syne',sans-serif;font-size:17px;font-weight:800;
+  color:var(--text);text-decoration:none}
+.nav-logo-icon{width:32px;height:32px;background:var(--text);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav-back{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;
+  border:1.5px solid var(--border);padding:6px 14px;border-radius:8px;
+  background:var(--surface);transition:border-color .15s,color .15s}
+.nav-back:hover{border-color:var(--text);color:var(--text)}
+.page-wrap{position:relative;z-index:1;max-width:780px;margin:0 auto;
+  padding:60px 48px 100px}
+.ch-header{margin-bottom:52px}
+.ch-num-label{font-size:12px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:12px;
+  display:flex;align-items:center;gap:10px}
+.ch-num-label::before{content:"";width:20px;height:2px;
+  background:var(--green);display:inline-block;border-radius:2px}
+h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);
+  font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:20px}
+.content h2{font-family:'Syne',sans-serif;font-size:1.45rem;font-weight:800;
+  margin:52px 0 14px;letter-spacing:-.02em;
+  padding-bottom:10px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.05rem;font-weight:700;margin:32px 0 10px}
+.content p{margin-bottom:18px;color:#2a2a2a}
+.content ul,.content ol{margin:0 0 18px 24px}
+.content li{margin-bottom:6px;color:#2a2a2a}
+.content strong{color:var(--text);font-weight:700}
+.content hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+.content blockquote{background:var(--surface);
+  border:1.5px solid var(--border);border-left:4px solid var(--green);
+  border-radius:0 10px 10px 0;padding:16px 20px;margin:24px 0;
+  font-size:.95rem;color:var(--muted)}
+.content table{width:100%;border-collapse:collapse;margin:24px 0;
+  font-size:13.5px;background:var(--surface);
+  border-radius:10px;overflow:hidden;border:1.5px solid var(--border)}
+.content th{background:var(--text);color:#fff;padding:10px 14px;
+  text-align:left;font-weight:700;font-size:12px;letter-spacing:.04em}
+.content td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.content tr:last-child td{border-bottom:none}
+.content tr:nth-child(even) td{background:#fafaf6}
+.content code{background:#ebebeb;border-radius:4px;
+  padding:2px 6px;font-size:.85rem;font-family:'JetBrains Mono','Fira Code',monospace;
+  color:#c0392b}
+.content pre{background:var(--code-bg);border-radius:12px;
+  padding:24px;margin:24px 0;overflow-x:auto;
+  border:1.5px solid #313244;box-shadow:0 4px 24px rgba(0,0,0,.15)}
+.content pre code{background:none;color:var(--code-text);
+  font-size:.85rem;padding:0;border-radius:0}
+.diagram-wrap{margin:32px 0;background:var(--surface);
+  border:1.5px solid var(--border);border-radius:14px;
+  padding:32px 24px;overflow-x:auto;
+  box-shadow:3px 3px 0 var(--border)}
+.diagram-wrap svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tldr-box{background:#f0fde4;border:1.5px solid #bbf7d0;border-left:4px solid var(--green-dk);
+  border-radius:10px;padding:20px 24px;margin:0 0 40px}
+.tldr-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--green-dk);margin-bottom:10px}
+.tldr-box ul{margin:0 0 0 18px}
+.tldr-box li{font-size:.9rem;color:#1a2e05;margin-bottom:5px}
+.gotcha-box{background:#fff5f5;border:1.5px solid #fecaca;border-left:4px solid #dc2626;
+  border-radius:10px;padding:20px 24px;margin:32px 0}
+.gotcha-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:#dc2626;margin-bottom:10px}
+.gotcha-box ol{margin:0 0 0 18px}
+.gotcha-box li{font-size:.9rem;color:#450a0a;margin-bottom:6px;line-height:1.6}
+.chapter-nav{display:flex;justify-content:space-between;
+  margin-top:80px;padding-top:32px;border-top:1.5px solid var(--border);gap:16px}
+.ch-nav-btn{text-decoration:none;color:var(--text);
+  border:1.5px solid var(--border);border-radius:10px;
+  padding:14px 20px;background:var(--surface);
+  font-size:13px;font-weight:600;transition:all .15s;max-width:48%}
+.ch-nav-btn:hover{border-color:var(--text);box-shadow:3px 3px 0 var(--text)}
+.ch-nav-next{text-align:right;margin-left:auto}
+.nav-dir{font-size:11px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.07em;margin-bottom:4px}
+@media(max-width:680px){
+  nav{padding:0 20px}.page-wrap{padding:40px 20px 60px}
+  .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">
+    <div class="nav-logo-icon">&#129302;</div>AI Engineering
+  </a>
+  <a href="../index.html" class="nav-back">&larr; All Chapters</a>
+</nav>
+<main class="page-wrap">
+  <header class="ch-header">
+    <div class="ch-num-label">Chapter 05</div>
+    <h1>RAG at Scale: From a Single PDF to 100M Documents</h1>
+  </header>
+  <div class="content">
+<div class="tldr-box">
+<h3>TL;DR</h3>
+<ul>
+<li>Five bottlenecks break RAG at scale: ingestion speed, embedding throughput, vector DB write limits, retrieval latency, and reranker cost.</li>
+<li>Day One: sequential ingestion, in-memory vector store, top-k cosine search. Works for fewer than 1k docs.</li>
+<li>Production: parallel async ingestion workers, batched GPU embeddings, sharded vector DB, HNSW ANN index, two-stage retrieve-then-rerank.</li>
+<li>The ingestion pipeline is a distributed system. Design it like one.</li>
+<li>At 100M docs: shard by org_id, use a dedicated embedding service, and separate hot vs cold index tiers.</li>
+</ul>
+</div>
+
+<h2>Where naive RAG breaks</h2>
+<p>The LlamaIndex RAG series covered building a correct pipeline. This chapter covers building a <em>fast</em> one. Five distinct bottlenecks appear in order as you scale - fix them in this sequence or you will optimise the wrong thing.</p>
+<table>
+<thead><tr><th>Bottleneck</th><th>Appears at</th><th>Symptom</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td><strong>Sequential ingestion</strong></td><td>~5k docs</td><td>Ingestion takes hours</td><td>Async parallel workers</td></tr>
+<tr><td><strong>Embedding throughput</strong></td><td>~50k docs</td><td>OpenAI rate limits hit</td><td>Batched local GPU embeddings</td></tr>
+<tr><td><strong>Vector DB write limits</strong></td><td>~500k docs</td><td>Upserts fail / timeout</td><td>Bulk load + sharding</td></tr>
+<tr><td><strong>Retrieval latency</strong></td><td>~1M docs</td><td>Search takes more than 2s</td><td>HNSW ANN index</td></tr>
+<tr><td><strong>Reranker cost</strong></td><td>~10M queries/day</td><td>Reranker dominates cost</td><td>Two-stage: ANN then rerank top-20 only</td></tr>
+</tbody>
+</table>
+<hr>
+
+<h2>Bottleneck 1: Sequential ingestion - async workers</h2>
+<p>The naive pipeline processes one document at a time: read - chunk - embed - store. At 50,000 docs with 2 seconds per doc, that is 28 hours. The fix is to parallelise across all four stages independently.</p>
+
+<div class="diagram-wrap">
+<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="arr-r" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker><marker id="arr-r2" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#888"/></marker></defs>
+<text x="10" y="20" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#666">Day One - Sequential (28 hrs for 50k docs)</text>
+<rect x="10" y="30" width="74" height="36" rx="6" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="47" y="53" text-anchor="middle" font-family="Caveat,cursive" font-size="12" fill="#333">Read</text>
+<line x1="84" y1="48" x2="100" y2="48" stroke="#888" stroke-width="1.5" marker-end="url(#arr-r2)"/>
+<rect x="102" y="30" width="74" height="36" rx="6" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="139" y="53" text-anchor="middle" font-family="Caveat,cursive" font-size="12" fill="#333">Chunk</text>
+<line x1="176" y1="48" x2="192" y2="48" stroke="#888" stroke-width="1.5" marker-end="url(#arr-r2)"/>
+<rect x="194" y="30" width="74" height="36" rx="6" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="231" y="53" text-anchor="middle" font-family="Caveat,cursive" font-size="12" fill="#333">Embed</text>
+<line x1="268" y1="48" x2="284" y2="48" stroke="#888" stroke-width="1.5" marker-end="url(#arr-r2)"/>
+<rect x="286" y="30" width="74" height="36" rx="6" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="323" y="53" text-anchor="middle" font-family="Caveat,cursive" font-size="12" fill="#333">Store</text>
+<text x="390" y="53" font-family="Caveat,cursive" font-size="12" fill="#dc2626">28 hours</text>
+<text x="10" y="105" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#15803d">Production - Parallel Workers (30 min for 50k docs)</text>
+<rect x="10" y="115" width="74" height="36" rx="6" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
+<text x="47" y="129" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#92400e">S3 + SQS</text>
+<text x="47" y="143" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#92400e">doc queue</text>
+<line x1="84" y1="133" x2="100" y2="133" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-r)"/>
+<rect x="102" y="106" width="90" height="74" rx="6" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="147" y="125" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Read x 8</text>
+<text x="147" y="141" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">async workers</text>
+<text x="147" y="156" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">S3 parallel</text>
+<line x1="192" y1="143" x2="208" y2="143" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-r)"/>
+<rect x="210" y="106" width="90" height="74" rx="6" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="255" y="125" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Chunk x 16</text>
+<text x="255" y="141" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">CPU-bound</text>
+<text x="255" y="156" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">ProcessPool</text>
+<line x1="300" y1="143" x2="316" y2="143" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-r)"/>
+<rect x="318" y="106" width="100" height="74" rx="6" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
+<text x="368" y="125" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#92400e">Embed GPU</text>
+<text x="368" y="141" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">BAAI/bge-large</text>
+<text x="368" y="156" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">batch=256, A10G</text>
+<line x1="418" y1="143" x2="434" y2="143" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-r)"/>
+<rect x="436" y="106" width="100" height="74" rx="6" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="486" y="125" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Store x 4</text>
+<text x="486" y="141" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Pinecone bulk</text>
+<text x="486" y="156" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">1000/batch async</text>
+<text x="560" y="143" font-family="Caveat,cursive" font-size="12" fill="#15803d">30 min</text>
+</svg>
+</div>
+
+<pre><code class="language-python"># ingestion_pipeline.py
+import asyncio
+from llama_index.core.ingestion import IngestionPipeline
+from llama_index.core.node_parser import SentenceSplitter
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+
+embed_model = HuggingFaceEmbedding(
+    model_name="BAAI/bge-large-en-v1.5",
+    device="cuda",
+    embed_batch_size=256,
+)
+
+pipeline = IngestionPipeline(
+    transformations=[SentenceSplitter(chunk_size=512, chunk_overlap=64), embed_model],
+    vector_store=pinecone_store,
+    docstore=redis_docstore,
+    docstore_strategy="upserts_and_delete",  # deduplication
+)
+
+async def ingest_batch(docs, semaphore):
+    async with semaphore:
+        await pipeline.arun(documents=docs, num_workers=4)
+
+async def ingest_all(all_docs, batch_size=500):
+    sem = asyncio.Semaphore(8)   # max 8 concurrent batches
+    batches = [all_docs[i:i+batch_size] for i in range(0, len(all_docs), batch_size)]
+    await asyncio.gather(*[ingest_batch(b, sem) for b in batches])</code></pre>
+<hr>
+
+<h2>Bottleneck 4: Retrieval latency - HNSW ANN index</h2>
+<p>Exact cosine search is O(N) - at 1M vectors it takes 2-5 seconds. HNSW (Hierarchical Navigable Small World) approximate nearest neighbour search reduces this to O(log N): milliseconds at any scale, with a small accuracy trade-off you control via <code>ef_search</code>.</p>
+
+<pre><code class="language-python"># Qdrant with explicit HNSW config
+from qdrant_client import QdrantClient
+from qdrant_client.models import VectorParams, Distance, HnswConfigDiff
+
+client = QdrantClient(url="http://localhost:6333")
+client.create_collection(
+    collection_name="wiki_chunks",
+    vectors_config=VectorParams(size=1024, distance=Distance.COSINE),
+    hnsw_config=HnswConfigDiff(
+        m=16,              # edges per node - higher = better recall, more RAM
+        ef_construct=200,  # build-time quality
+    ),
+)
+
+# At query time: ef (search width) trades accuracy for speed
+results = client.search(
+    collection_name="wiki_chunks",
+    query_vector=query_embedding,
+    limit=20,
+    search_params={"hnsw_ef": 128},
+)</code></pre>
+<hr>
+
+<h2>Bottleneck 5: Two-stage retrieve-then-rerank</h2>
+<pre><code class="language-python"># Stage 1: ANN retrieval - fast, approximate (top-20 candidates, milliseconds)
+candidates = vector_store.query(query_embedding, top_k=20)
+
+# Stage 2: Cross-encoder reranking - slow, precise (rerank to top-5)
+# Cross-encoders jointly encode query + document for much better relevance
+from llama_index.postprocessor.flag_embedding_reranker import FlagEmbeddingReranker
+
+reranker = FlagEmbeddingReranker(
+    model="BAAI/bge-reranker-large",
+    top_n=5,
+)
+# Only runs on 20 candidates, not 1M vectors - cost stays fixed regardless of index size</code></pre>
+
+<table>
+<thead><tr><th>Stage</th><th>Speed</th><th>Accuracy</th><th>Cost</th><th>Scales with</th></tr></thead>
+<tbody>
+<tr><td>ANN (HNSW)</td><td>2-10ms</td><td>95-98% recall</td><td>Very low</td><td>O(log N)</td></tr>
+<tr><td>Cross-encoder rerank</td><td>100-500ms</td><td>Near-perfect</td><td>Fixed (top-20 only)</td><td>O(1) - always 20</td></tr>
+<tr><td>Naive exact search</td><td>2000-5000ms</td><td>100% recall</td><td>High</td><td>O(N)</td></tr>
+</tbody>
+</table>
+
+<div class="gotcha-box">
+<h3>&#9888; Common Mistakes &amp; Gotchas</h3>
+<ol>
+<li><strong>Using OpenAI embeddings at bulk scale.</strong> At 100M chunks, OpenAI's embedding API rate limit makes bulk ingestion take weeks. Use a local GPU embedding model (BAAI/bge) for ingestion; OpenAI only for query-time.</li>
+<li><strong>Not deduplicating on re-ingestion.</strong> Without <code>DocstoreStrategy.UPSERTS_AND_DELETE</code>, every daily re-run doubles your index size. Hash document content and skip unchanged docs.</li>
+<li><strong>Building HNSW index incrementally one-by-one.</strong> Adding vectors one at a time is 10x slower than bulk loading. Always bulk-load, then serve. Add incrementally for daily updates but rebuild the full index weekly.</li>
+<li><strong>Reranking all retrieved candidates.</strong> Running a cross-encoder over top-100 at 10k queries/min is prohibitive GPU cost. Retrieve top-20 with ANN, rerank to top-5. That ratio is the sweet spot.</li>
+<li><strong>Single-shard vector DB beyond 10M vectors.</strong> Most hosted vector DBs hit latency spikes beyond 10M vectors in a single collection. Shard by team or department before you hit the limit.</li>
+</ol>
+</div>
+
+  <nav class="chapter-nav">
+    <a class="ch-nav-btn" href="chapter-04-multi-agent-orchestration-fault-tolerance.html"><div class="nav-dir">&larr; Previous</div>Multi-Agent Orchestration: Designing for Fault Tolerance</a>
+    <a class="ch-nav-btn ch-nav-next" href="chapter-06-observability-for-ai-systems.html"><div class="nav-dir">Next &rarr;</div>Observability for AI Systems: Tracing What You Can't See</a>
+  </nav>
+  </div>
+</main>
+</body>
+</html>
