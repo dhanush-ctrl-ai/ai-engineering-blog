@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Building Production AI Agents. A deep-dive blog series for software engineers with backend experience." />
+<title>AI Engineering — Blog Series</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --cream: #FEFDF8;
+    --cream-dark: #F5F3E8;
+    --cream-border: #E8E4D4;
+    --lime: #84CC16;
+    --lime-dark: #65A30D;
+    --lime-light: #F0FDE4;
+    --lime-muted: #D9F99D;
+    --text-primary: #1C1917;
+    --text-secondary: #57534E;
+    --text-muted: #A8A29E;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--cream);
+    color: var(--text-primary);
+    font-family: 'Lora', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.8;
+  }
+
+  /* NAV */
+  nav {
+    background: var(--cream);
+    border-bottom: 1.5px solid var(--cream-border);
+    padding: 14px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .brand {
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-decoration: none;
+  }
+  .brand span { color: var(--lime-dark); }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: color 0.15s;
+  }
+  .nav-links a:hover { color: var(--lime-dark); }
+  .nav-links a.gh {
+    background: var(--cream-dark);
+    border: 1px solid var(--cream-border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: var(--text-secondary);
+  }
+  .nav-links a.gh:hover { border-color: var(--lime); color: var(--lime-dark); }
+
+  /* HERO */
+  .hero {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 72px 24px 56px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 40px;
+    align-items: center;
+  }
+  @media (max-width: 680px) { .hero { grid-template-columns: 1fr; } .hero-stats { display: none; } }
+  .hero-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--lime-dark);
+    background: var(--lime-light);
+    border: 1px solid var(--lime-muted);
+    border-radius: 20px;
+    padding: 4px 14px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: 'Caveat', cursive;
+    font-size: clamp(36px, 5vw, 54px);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+  .hero h1 .accent { color: var(--lime-dark); }
+  .hero p {
+    font-size: 17px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 560px;
+    margin-bottom: 24px;
+  }
+  .hero-cta {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--lime-dark);
+    text-decoration: none;
+    border: 1.5px solid var(--lime);
+    border-radius: 8px;
+    padding: 10px 20px;
+    transition: background 0.15s;
+  }
+  .hero-cta:hover { background: var(--lime-light); }
+  .hero-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px;
+    background: var(--cream-dark);
+    border: 1.5px solid var(--cream-border);
+    border-radius: 14px;
+    min-width: 180px;
+  }
+  .stat { text-align: center; }
+  .stat .num {
+    font-family: 'Caveat', cursive;
+    font-size: 38px;
+    font-weight: 700;
+    color: var(--lime-dark);
+    line-height: 1;
+  }
+  .stat .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    letter-spacing: 0.04em;
+  }
+  .stat-divider { border: none; border-top: 1px solid var(--cream-border); }
+
+  /* USE CASE BANNER */
+  .usecase {
+    max-width: 900px;
+    margin: 0 auto 48px;
+    padding: 0 24px;
+  }
+  .usecase-inner {
+    background: var(--lime-light);
+    border: 1.5px solid var(--lime-muted);
+    border-left: 4px solid var(--lime-dark);
+    border-radius: 10px;
+    padding: 20px 24px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .usecase-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+  .usecase-text { font-size: 15px; color: var(--text-primary); line-height: 1.6; }
+  .usecase-text strong { color: var(--lime-dark); }
+
+  /* CHAPTERS */
+  .chapters-section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+  .section-header {
+    font-family: 'Caveat', cursive;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1.5px solid var(--cream-border);
+  }
+  .section-header span { color: var(--lime-dark); }
+
+  .chapter-card {
+    display: flex;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--cream-border);
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s;
+  }
+  .chapter-card:hover { background: var(--cream-dark); margin: 0 -16px; padding: 20px 16px; border-radius: 8px; border-bottom-color: transparent; }
+  .chapter-card.coming-soon { opacity: 0.5; cursor: default; pointer-events: none; }
+
+  .chapter-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    width: 32px;
+    padding-top: 3px;
+  }
+  .chapter-body { flex: 1; }
+  .chapter-title {
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    line-height: 1.25;
+  }
+  .chapter-card:hover .chapter-title { color: var(--lime-dark); }
+  .chapter-desc {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin-bottom: 10px;
+  }
+  .chapter-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    background: var(--cream-dark);
+    border: 1px solid var(--cream-border);
+    border-radius: 4px;
+    padding: 2px 8px;
+  }
+  .chapter-arrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px;
+    color: var(--lime-muted);
+    flex-shrink: 0;
+    align-self: center;
+    transition: color 0.15s, transform 0.15s;
+  }
+  .chapter-card:hover .chapter-arrow { color: var(--lime-dark); transform: translateX(4px); }
+  .status-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-bottom: 6px;
+  }
+  .badge-new { background: var(--lime-light); color: var(--lime-dark); border: 1px solid var(--lime-muted); }
+  .badge-soon { background: var(--cream-dark); color: var(--text-muted); border: 1px solid var(--cream-border); }
+
+  /* STACK */
+  .stack-section {
+    background: var(--cream-dark);
+    border-top: 1.5px solid var(--cream-border);
+    border-bottom: 1.5px solid var(--cream-border);
+    padding: 40px 24px;
+    margin-bottom: 0;
+  }
+  .stack-inner {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .stack-title {
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+  .stack-tags { display: flex; gap: 10px; flex-wrap: wrap; }
+  .stack-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--cream);
+    border: 1px solid var(--cream-border);
+    border-radius: 6px;
+    padding: 5px 12px;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 32px 24px;
+    text-align: center;
+  }
+  footer p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  footer .footer-brand {
+    font-family: 'Caveat', cursive;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  footer .footer-brand span { color: var(--lime-dark); }
+  footer a { color: var(--lime-dark); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="brand" href="#">dhanush<span>.ctrl.ai</span></a>
+    <div class="nav-links">
+      <a href="#chapters">Chapters</a>
+      <a href="#stack">Stack</a>
+      <a class="gh" href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">AI Engineering Series</div>
+    <h1>Build AI Agents<br>that <span class="accent">Actually Stay Up</span></h1>
+    <p>
+      Everything a backend engineer needs to go from a naive agent loop that crashes at 2 AM
+      to a production runtime with circuit breakers, dead-letter queues, and compensation logic.
+      Your distributed systems experience is the moat — this series shows you how to use it.
+    </p>
+    <a class="hero-cta" href="#chapters">Read the series →</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="num">1</div>
+      <div class="label">Published</div>
+    </div>
+    <hr class="stat-divider" />
+    <div class="stat">
+      <div class="num">6+</div>
+      <div class="label">Coming soon</div>
+    </div>
+    <hr class="stat-divider" />
+    <div class="stat">
+      <div class="num">100%</div>
+      <div class="label">Free</div>
+    </div>
+  </div>
+</div>
+
+<div class="usecase">
+  <div class="usecase-inner">
+    <div class="usecase-icon">🏗️</div>
+    <div class="usecase-text">
+      <strong>The running use case:</strong> Your engineering org has a 50,000-page internal wiki.
+      An AI agent can search it, create Jira tickets, send Slack alerts, and update Confluence — autonomously.
+      It processes 50,000 agent runs per day across 3,000 engineers.
+      Every chapter solves one real failure mode in building that system.
+    </div>
+  </div>
+</div>
+
+<div class="chapters-section" id="chapters">
+  <div class="section-header">Published <span>Chapters</span></div>
+
+  <a class="chapter-card" href="chapters/chapter-01-building-production-ai-agent-failure-recovery.html">
+    <div class="chapter-num">01</div>
+    <div class="chapter-body">
+      <div class="status-badge badge-new">✦ New</div>
+      <div class="chapter-title">Building a Production AI Agent with Failure Recovery</div>
+      <div class="chapter-desc">
+        From a naive while-loop that crashes at 2 AM, to a hardened agent runtime with circuit breakers,
+        dead-letter queues, idempotency keys, and compensation logic. The backend engineer's playbook for
+        agents that actually stay up at 50k runs/day.
+      </div>
+      <div class="chapter-tags">
+        <span class="tag">ReAct loop</span>
+        <span class="tag">Circuit breakers</span>
+        <span class="tag">Celery + Redis</span>
+        <span class="tag">Dead-letter queue</span>
+        <span class="tag">Idempotency</span>
+        <span class="tag">Saga pattern</span>
+      </div>
+    </div>
+    <div class="chapter-arrow">→</div>
+  </a>
+
+  <div class="section-header" style="margin-top:40px;">Coming <span>Soon</span></div>
+
+  <div class="chapter-card coming-soon">
+    <div class="chapter-num">02</div>
+    <div class="chapter-body">
+      <div class="status-badge badge-soon">Coming soon</div>
+      <div class="chapter-title">LLM Eval Harnesses in CI/CD</div>
+      <div class="chapter-desc">Block agent regressions before they reach production. Build a pytest-based eval harness that runs on every PR.</div>
+      <div class="chapter-tags"><span class="tag">Evals</span><span class="tag">CI/CD</span><span class="tag">Regression detection</span></div>
+    </div>
+    <div class="chapter-arrow">→</div>
+  </div>
+
+  <div class="chapter-card coming-soon">
+    <div class="chapter-num">03</div>
+    <div class="chapter-body">
+      <div class="status-badge badge-soon">Coming soon</div>
+      <div class="chapter-title">The Hidden Costs of LLM Calls in Production</div>
+      <div class="chapter-desc">Semantic caching, request batching, and model routing by complexity. Drop your LLM spend by 10x.</div>
+      <div class="chapter-tags"><span class="tag">Semantic cache</span><span class="tag">Cost optimization</span><span class="tag">Model routing</span></div>
+    </div>
+    <div class="chapter-arrow">→</div>
+  </div>
+
+  <div class="chapter-card coming-soon">
+    <div class="chapter-num">04</div>
+    <div class="chapter-body">
+      <div class="status-badge badge-soon">Coming soon</div>
+      <div class="chapter-title">Multi-Agent Orchestration: Designing for Fault Tolerance</div>
+      <div class="chapter-desc">What happens when one agent in a 5-agent pipeline fails? Dead-letter queues, compensation logic, partial result caching.</div>
+      <div class="chapter-tags"><span class="tag">Multi-agent</span><span class="tag">Orchestration</span><span class="tag">Fault tolerance</span></div>
+    </div>
+    <div class="chapter-arrow">→</div>
+  </div>
+
+  <div class="chapter-card coming-soon">
+    <div class="chapter-num">05</div>
+    <div class="chapter-body">
+      <div class="status-badge badge-soon">Coming soon</div>
+      <div class="chapter-title">RAG at Scale: From a Single PDF to 100M Documents</div>
+      <div class="chapter-desc">Vector DB sharding, reranking at scale, and cache-aware retrieval. The production sequel to the LlamaIndex series.</div>
+      <div class="chapter-tags"><span class="tag">RAG</span><span class="tag">Sharding</span><span class="tag">Reranking</span></div>
+    </div>
+    <div class="chapter-arrow">→</div>
+  </div>
+
+  <div class="chapter-card coming-soon">
+    <div class="chapter-num">06</div>
+    <div class="chapter-body">
+      <div class="status-badge badge-soon">Coming soon</div>
+      <div class="chapter-title">Observability for AI Systems: Tracing What You Can't See</div>
+      <div class="chapter-desc">OTEL spans, Langfuse traces, token cost per step, p99 latency by agent type. Know when your agent breaks before your users do.</div>
+      <div class="chapter-tags"><span class="tag">OTEL</span><span class="tag">Langfuse</span><span class="tag">Observability</span></div>
+    </div>
+    <div class="chapter-arrow">→</div>
+  </div>
+</div>
+
+<div class="stack-section" id="stack">
+  <div class="stack-inner">
+    <div class="stack-title">Tech Stack</div>
+    <div class="stack-tags">
+      <span class="stack-tag">🐍 Python 3.10+</span>
+      <span class="stack-tag">🤖 OpenAI / Claude</span>
+      <span class="stack-tag">🔗 LangChain / LlamaIndex</span>
+      <span class="stack-tag">⚡ Celery + Redis</span>
+      <span class="stack-tag">🗄️ Postgres</span>
+      <span class="stack-tag">☸️ Kubernetes + KEDA</span>
+      <span class="stack-tag">🔭 Langfuse / OTEL</span>
+      <span class="stack-tag">🔒 Circuit Breakers</span>
+      <span class="stack-tag">📬 SQS / RabbitMQ</span>
+      <span class="stack-tag">📊 PagerDuty</span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand">dhanush<span>.ctrl.ai</span></div>
+  <p>AI Engineering Series · Building production systems with backend depth</p>
+  <p style="margin-top:6px;">Source on <a href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub</a> · Bengaluru, India · 2026</p>
+</footer>
+
+</body>
+</html>
