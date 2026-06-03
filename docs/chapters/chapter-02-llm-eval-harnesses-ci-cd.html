@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ch02: LLM Eval Harnesses in CI/CD - AI Engineering Series</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f2ed;--surface:#fff;--border:#e2e2da;
+  --text:#111;--muted:#666660;--green:#c8f135;--green-dk:#a8d010;
+  --dot:#d8d8d0;--code-bg:#1e1e2e;--code-text:#cdd6f4;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
+  line-height:1.75;font-size:16px;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;
+  background-image:radial-gradient(circle,var(--dot) 1px,transparent 1px);
+  background-size:28px 28px;pointer-events:none;z-index:0;opacity:.45}
+nav{position:sticky;top:0;z-index:100;background:rgba(242,242,237,.9);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  padding:0 48px;height:60px;display:flex;align-items:center;
+  justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;
+  font-family:'Syne',sans-serif;font-size:17px;font-weight:800;
+  color:var(--text);text-decoration:none}
+.nav-logo-icon{width:32px;height:32px;background:var(--text);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav-back{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;
+  border:1.5px solid var(--border);padding:6px 14px;border-radius:8px;
+  background:var(--surface);transition:border-color .15s,color .15s}
+.nav-back:hover{border-color:var(--text);color:var(--text)}
+.page-wrap{position:relative;z-index:1;max-width:780px;margin:0 auto;
+  padding:60px 48px 100px}
+.ch-header{margin-bottom:52px}
+.ch-num-label{font-size:12px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:12px;
+  display:flex;align-items:center;gap:10px}
+.ch-num-label::before{content:"";width:20px;height:2px;
+  background:var(--green);display:inline-block;border-radius:2px}
+h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);
+  font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:20px}
+.content h2{font-family:'Syne',sans-serif;font-size:1.45rem;font-weight:800;
+  margin:52px 0 14px;letter-spacing:-.02em;
+  padding-bottom:10px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.05rem;font-weight:700;margin:32px 0 10px}
+.content p{margin-bottom:18px;color:#2a2a2a}
+.content ul,.content ol{margin:0 0 18px 24px}
+.content li{margin-bottom:6px;color:#2a2a2a}
+.content strong{color:var(--text);font-weight:700}
+.content hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+.content blockquote{background:var(--surface);
+  border:1.5px solid var(--border);border-left:4px solid var(--green);
+  border-radius:0 10px 10px 0;padding:16px 20px;margin:24px 0;
+  font-size:.95rem;color:var(--muted)}
+.content table{width:100%;border-collapse:collapse;margin:24px 0;
+  font-size:13.5px;background:var(--surface);
+  border-radius:10px;overflow:hidden;border:1.5px solid var(--border)}
+.content th{background:var(--text);color:#fff;padding:10px 14px;
+  text-align:left;font-weight:700;font-size:12px;letter-spacing:.04em}
+.content td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.content tr:last-child td{border-bottom:none}
+.content tr:nth-child(even) td{background:#fafaf6}
+.content code{background:#ebebeb;border-radius:4px;
+  padding:2px 6px;font-size:.85rem;font-family:'JetBrains Mono','Fira Code',monospace;
+  color:#c0392b}
+.content pre{background:var(--code-bg);border-radius:12px;
+  padding:24px;margin:24px 0;overflow-x:auto;
+  border:1.5px solid #313244;box-shadow:0 4px 24px rgba(0,0,0,.15)}
+.content pre code{background:none;color:var(--code-text);
+  font-size:.85rem;padding:0;border-radius:0}
+.diagram-wrap{margin:32px 0;background:var(--surface);
+  border:1.5px solid var(--border);border-radius:14px;
+  padding:32px 24px;overflow-x:auto;
+  box-shadow:3px 3px 0 var(--border)}
+.diagram-wrap svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tldr-box{background:#f0fde4;border:1.5px solid #bbf7d0;border-left:4px solid var(--green-dk);
+  border-radius:10px;padding:20px 24px;margin:0 0 40px}
+.tldr-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--green-dk);margin-bottom:10px}
+.tldr-box ul{margin:0 0 0 18px}
+.tldr-box li{font-size:.9rem;color:#1a2e05;margin-bottom:5px}
+.gotcha-box{background:#fff5f5;border:1.5px solid #fecaca;border-left:4px solid #dc2626;
+  border-radius:10px;padding:20px 24px;margin:32px 0}
+.gotcha-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:#dc2626;margin-bottom:10px}
+.gotcha-box ol{margin:0 0 0 18px}
+.gotcha-box li{font-size:.9rem;color:#450a0a;margin-bottom:6px;line-height:1.6}
+.chapter-nav{display:flex;justify-content:space-between;
+  margin-top:80px;padding-top:32px;border-top:1.5px solid var(--border);gap:16px}
+.ch-nav-btn{text-decoration:none;color:var(--text);
+  border:1.5px solid var(--border);border-radius:10px;
+  padding:14px 20px;background:var(--surface);
+  font-size:13px;font-weight:600;transition:all .15s;max-width:48%}
+.ch-nav-btn:hover{border-color:var(--text);box-shadow:3px 3px 0 var(--text)}
+.ch-nav-next{text-align:right;margin-left:auto}
+.nav-dir{font-size:11px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.07em;margin-bottom:4px}
+@media(max-width:680px){
+  nav{padding:0 20px}.page-wrap{padding:40px 20px 60px}
+  .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">
+    <div class="nav-logo-icon">&#129302;</div>AI Engineering
+  </a>
+  <a href="../index.html" class="nav-back">&larr; All Chapters</a>
+</nav>
+<main class="page-wrap">
+  <header class="ch-header">
+    <div class="ch-num-label">Chapter 02</div>
+    <h1>LLM Eval Harnesses in CI/CD</h1>
+  </header>
+  <div class="content">
+<div class="tldr-box">
+<h3>TL;DR</h3>
+<ul>
+<li>Most AI teams discover regressions in production. A CI eval harness catches them in the PR.</li>
+<li>Day One: a pytest script with golden Q&amp;A pairs and cosine similarity scoring.</li>
+<li>Production: async eval workers, per-test latency budgets, cost tracking per PR, and a blocking GitHub Actions step.</li>
+<li>The golden dataset is your most valuable artefact - build it from real user queries, not synthetic ones.</li>
+<li>Key metrics: answer faithfulness, retrieval precision@k, latency p95, token cost per query.</li>
+</ul>
+</div>
+
+<h2>The moment you realise you need this</h2>
+<p>You update your prompt template on a Monday. Tests pass - there are no tests. Deploy goes out. By Wednesday, three engineers have filed bugs: the agent is now hallucinating Jira ticket numbers it used to get right. You roll back, but you have lost two days and your users' trust.</p>
+<p>This is the most common failure mode in AI systems: <strong>silent regression</strong>. Unlike traditional software where a wrong function return is deterministic and testable, an LLM that used to answer correctly can start answering differently after a model update - and no unit test catches it unless you deliberately measure output quality.</p>
+<blockquote>An eval harness is a test suite for correctness, not just execution. It answers: "did the agent do the right thing?" not just "did it run without crashing?"</blockquote>
+<hr>
+
+<h2>What you are actually measuring</h2>
+<p>Before writing any code, decide what "correct" means for your agent. There are four dimensions worth tracking in CI:</p>
+<table>
+<thead><tr><th>Metric</th><th>What it measures</th><th>How to score it</th><th>Fail threshold</th></tr></thead>
+<tbody>
+<tr><td><strong>Faithfulness</strong></td><td>Does the answer come from retrieved context, not hallucination?</td><td>LLM-as-judge: ask Claude/GPT-4 to rate 0-1</td><td>&lt; 0.85</td></tr>
+<tr><td><strong>Answer relevance</strong></td><td>Does the answer actually address the question?</td><td>Cosine similarity of question vs answer embeddings</td><td>&lt; 0.75</td></tr>
+<tr><td><strong>Retrieval precision@k</strong></td><td>Are the top-k retrieved chunks the right ones?</td><td>Overlap with manually labelled ground-truth chunks</td><td>&lt; 0.60</td></tr>
+<tr><td><strong>Latency p95</strong></td><td>Is the agent fast enough?</td><td>Wall-clock time across N runs</td><td>&gt; 30s</td></tr>
+<tr><td><strong>Token cost</strong></td><td>Did this PR make the agent more expensive?</td><td>tiktoken count x model price</td><td>&gt; 20% increase</td></tr>
+</tbody>
+</table>
+<p>You do not need all five on day one. Start with faithfulness and answer relevance - they catch 80% of regressions.</p>
+<hr>
+
+<h2>Day One: the pytest golden set</h2>
+<p>The metaphor here is a <strong>spell-checker for your agent</strong>. You give it a fixed dictionary of right answers; it flags anything that deviates. Simple, fast, enough to start.</p>
+
+<h3>Building the golden dataset</h3>
+<p>The most common mistake is generating synthetic Q&amp;A pairs with GPT-4. Do not. Use real queries from real users - look at your agent's logs, Slack DMs, support tickets. 50 real questions beat 500 synthetic ones.</p>
+
+<pre><code class="language-json">// golden_set.json - built from real user queries
+[
+  {
+    "id": "gs-001",
+    "question": "How do I rotate a service account key in GCP?",
+    "expected_keywords": ["iam", "service account", "key rotation", "gcloud"],
+    "expected_sources": ["gcp-security-runbook.md"],
+    "max_latency_s": 15
+  },
+  {
+    "id": "gs-002",
+    "question": "What is the SLA for P1 incidents?",
+    "expected_keywords": ["15 minutes", "on-call", "pagerduty"],
+    "expected_sources": ["incident-response-runbook.md"],
+    "max_latency_s": 10
+  }
+]</code></pre>
+
+<h3>The Day One eval script</h3>
+<pre><code class="language-python"># test_agent_eval.py
+import pytest, json, time, math
+from openai import OpenAI
+
+client = OpenAI()
+
+def embed(text):
+    return client.embeddings.create(model="text-embedding-3-small", input=text).data[0].embedding
+
+def cosine(a, b):
+    dot = sum(x*y for x,y in zip(a,b))
+    return dot / (math.sqrt(sum(x**2 for x in a)) * math.sqrt(sum(x**2 for x in b)))
+
+with open("golden_set.json") as f:
+    GOLDEN = json.load(f)
+
+@pytest.mark.parametrize("case", GOLDEN, ids=[c["id"] for c in GOLDEN])
+def test_agent_answer_quality(case, agent):
+    start = time.time()
+    result = agent.run(case["question"])
+    elapsed = time.time() - start
+
+    # Latency check
+    assert elapsed < case["max_latency_s"], \
+        f"Latency {elapsed:.1f}s exceeded budget {case['max_latency_s']}s"
+
+    # Keyword coverage
+    answer_lower = result.answer.lower()
+    missing = [kw for kw in case["expected_keywords"] if kw not in answer_lower]
+    assert not missing, f"Missing keywords: {missing}"
+
+    # Semantic relevance
+    sim = cosine(embed(case["question"]), embed(result.answer))
+    assert sim > 0.70, f"Answer relevance too low: {sim:.2f}"</code></pre>
+<hr>
+
+<h2>Production: CI/CD integration with GitHub Actions</h2>
+<p>The Day One script runs on your laptop. The production eval harness runs on every PR - automatically, blocking merge if scores drop.</p>
+
+<div class="diagram-wrap">
+<svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="arr-e" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker></defs>
+<rect x="10" y="80" width="90" height="44" rx="8" fill="#f9f9f9" stroke="#888" stroke-width="1.5"/>
+<text x="55" y="99" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="600" fill="#333">PR opened</text>
+<text x="55" y="116" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">push to main</text>
+<line x1="100" y1="102" x2="128" y2="102" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-e)"/>
+<rect x="130" y="68" width="110" height="68" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="185" y="92" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="600" fill="#15803d">GitHub Actions</text>
+<text x="185" y="109" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">eval.yml workflow</text>
+<text x="185" y="124" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">pytest -x --eval</text>
+<line x1="240" y1="102" x2="268" y2="102" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-e)"/>
+<rect x="270" y="58" width="130" height="88" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
+<text x="335" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="600" fill="#92400e">Async Eval Workers</text>
+<text x="335" y="100" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">50 golden cases</text>
+<text x="335" y="116" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">parallel, timeout 60s</text>
+<text x="335" y="132" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">LLM-as-judge scoring</text>
+<line x1="400" y1="102" x2="428" y2="102" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-e)"/>
+<rect x="430" y="58" width="110" height="88" rx="8" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="485" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="600" fill="#333">Score Report</text>
+<text x="485" y="100" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">faithfulness: 0.91</text>
+<text x="485" y="116" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">relevance: 0.84</text>
+<text x="485" y="132" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">cost: $0.0021/q</text>
+<line x1="540" y1="85" x2="600" y2="65" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-e)"/>
+<rect x="602" y="48" width="68" height="28" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="636" y="67" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#16a34a">&#10003; Merge</text>
+<line x1="540" y1="122" x2="600" y2="142" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-e)"/>
+<rect x="602" y="130" width="68" height="28" rx="6" fill="#fff5f5" stroke="#fecaca" stroke-width="1.5"/>
+<text x="636" y="149" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#dc2626">&#10007; Block</text>
+</svg>
+</div>
+
+<pre><code class="language-yaml"># .github/workflows/eval.yml
+name: Agent Eval
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Run eval harness
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          pytest tests/eval/ \
+            --eval-threshold-faithfulness=0.85 \
+            --eval-threshold-relevance=0.75 \
+            --json-report --json-report-file=eval-report.json</code></pre>
+
+<h3>Async eval workers for speed</h3>
+<p>Running 50 eval cases sequentially takes 5-10 minutes in CI. Use <code>asyncio.gather</code> to run them in parallel - 50 cases finish in the time of the slowest one:</p>
+<pre><code class="language-python"># tests/eval/runner.py
+import asyncio, time
+from dataclasses import dataclass
+
+@dataclass
+class EvalResult:
+    case_id: str
+    faithfulness: float
+    relevance: float
+    latency_s: float
+    cost_usd: float
+    passed: bool
+
+async def eval_case(agent, case):
+    start = time.perf_counter()
+    result = await agent.arun(case["question"])
+    latency = time.perf_counter() - start
+
+    faithfulness = await score_faithfulness(
+        question=case["question"],
+        answer=result.answer,
+        context="\n".join(n.text for n in result.source_nodes)
+    )
+    relevance = cosine_similarity(embed(case["question"]), embed(result.answer))
+    cost = estimate_cost(result.token_usage)
+
+    passed = faithfulness >= 0.85 and relevance >= 0.75 and latency < case.get("max_latency_s", 30)
+    return EvalResult(case["id"], faithfulness, relevance, latency, cost, passed)
+
+async def run_all(agent, golden_set):
+    return await asyncio.gather(*[eval_case(agent, c) for c in golden_set])</code></pre>
+<hr>
+
+<h2>Day One vs Production</h2>
+<table>
+<thead><tr><th>Dimension</th><th>Day One</th><th>Production CI</th></tr></thead>
+<tbody>
+<tr><td>Where it runs</td><td>Your laptop, manually</td><td>GitHub Actions, every PR</td></tr>
+<tr><td>Test cases</td><td>5-10 handwritten</td><td>50-200 from real user logs</td></tr>
+<tr><td>Execution</td><td>Sequential, pytest</td><td>Async parallel, 5x faster</td></tr>
+<tr><td>Scoring</td><td>Keyword match</td><td>LLM-as-judge + embedding cosine</td></tr>
+<tr><td>On failure</td><td>You notice eventually</td><td>PR blocked, comment posted</td></tr>
+<tr><td>Cost tracking</td><td>None</td><td>Per-PR cost delta reported</td></tr>
+</tbody>
+</table>
+
+<div class="gotcha-box">
+<h3>&#9888; Common Mistakes &amp; Gotchas</h3>
+<ol>
+<li><strong>Using synthetic golden data.</strong> GPT-4 generated Q&amp;A pairs test whether your agent behaves like GPT-4, not whether it helps your users. Mine real query logs.</li>
+<li><strong>LLM-as-judge with the same model you are evaluating.</strong> If your agent uses GPT-4o and your judge is GPT-4o, the judge will systematically agree. Use a different model or embedding-based scoring.</li>
+<li><strong>Threshold too strict on day one.</strong> Setting faithfulness at 0.95 with 5 test cases means you will be debugging the eval harness instead of the agent. Start at 0.80, tighten as your golden set grows.</li>
+<li><strong>Not tracking cost delta.</strong> A PR can pass all quality checks but double your token spend. Always report cost per query as a CI metric.</li>
+<li><strong>Skipping eval in hotfix PRs.</strong> That is exactly when regressions sneak through.</li>
+</ol>
+</div>
+
+  <nav class="chapter-nav">
+    <a class="ch-nav-btn" href="chapter-01-building-production-ai-agent-failure-recovery.html"><div class="nav-dir">&larr; Previous</div>Building a Production AI Agent with Failure Recovery</a>
+    <a class="ch-nav-btn ch-nav-next" href="chapter-03-hidden-costs-llm-calls-production.html"><div class="nav-dir">Next &rarr;</div>The Hidden Costs of LLM Calls in Production</a>
+  </nav>
+  </div>
+</main>
+</body>
+</html>
