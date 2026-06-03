@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ch03: The Hidden Costs of LLM Calls in Production - AI Engineering Series</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f2ed;--surface:#fff;--border:#e2e2da;
+  --text:#111;--muted:#666660;--green:#c8f135;--green-dk:#a8d010;
+  --dot:#d8d8d0;--code-bg:#1e1e2e;--code-text:#cdd6f4;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
+  line-height:1.75;font-size:16px;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;
+  background-image:radial-gradient(circle,var(--dot) 1px,transparent 1px);
+  background-size:28px 28px;pointer-events:none;z-index:0;opacity:.45}
+nav{position:sticky;top:0;z-index:100;background:rgba(242,242,237,.9);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  padding:0 48px;height:60px;display:flex;align-items:center;
+  justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;
+  font-family:'Syne',sans-serif;font-size:17px;font-weight:800;
+  color:var(--text);text-decoration:none}
+.nav-logo-icon{width:32px;height:32px;background:var(--text);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav-back{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;
+  border:1.5px solid var(--border);padding:6px 14px;border-radius:8px;
+  background:var(--surface);transition:border-color .15s,color .15s}
+.nav-back:hover{border-color:var(--text);color:var(--text)}
+.page-wrap{position:relative;z-index:1;max-width:780px;margin:0 auto;
+  padding:60px 48px 100px}
+.ch-header{margin-bottom:52px}
+.ch-num-label{font-size:12px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:12px;
+  display:flex;align-items:center;gap:10px}
+.ch-num-label::before{content:"";width:20px;height:2px;
+  background:var(--green);display:inline-block;border-radius:2px}
+h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);
+  font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:20px}
+.content h2{font-family:'Syne',sans-serif;font-size:1.45rem;font-weight:800;
+  margin:52px 0 14px;letter-spacing:-.02em;
+  padding-bottom:10px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.05rem;font-weight:700;margin:32px 0 10px}
+.content p{margin-bottom:18px;color:#2a2a2a}
+.content ul,.content ol{margin:0 0 18px 24px}
+.content li{margin-bottom:6px;color:#2a2a2a}
+.content strong{color:var(--text);font-weight:700}
+.content hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+.content blockquote{background:var(--surface);
+  border:1.5px solid var(--border);border-left:4px solid var(--green);
+  border-radius:0 10px 10px 0;padding:16px 20px;margin:24px 0;
+  font-size:.95rem;color:var(--muted)}
+.content table{width:100%;border-collapse:collapse;margin:24px 0;
+  font-size:13.5px;background:var(--surface);
+  border-radius:10px;overflow:hidden;border:1.5px solid var(--border)}
+.content th{background:var(--text);color:#fff;padding:10px 14px;
+  text-align:left;font-weight:700;font-size:12px;letter-spacing:.04em}
+.content td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.content tr:last-child td{border-bottom:none}
+.content tr:nth-child(even) td{background:#fafaf6}
+.content code{background:#ebebeb;border-radius:4px;
+  padding:2px 6px;font-size:.85rem;font-family:'JetBrains Mono','Fira Code',monospace;
+  color:#c0392b}
+.content pre{background:var(--code-bg);border-radius:12px;
+  padding:24px;margin:24px 0;overflow-x:auto;
+  border:1.5px solid #313244;box-shadow:0 4px 24px rgba(0,0,0,.15)}
+.content pre code{background:none;color:var(--code-text);
+  font-size:.85rem;padding:0;border-radius:0}
+.diagram-wrap{margin:32px 0;background:var(--surface);
+  border:1.5px solid var(--border);border-radius:14px;
+  padding:32px 24px;overflow-x:auto;
+  box-shadow:3px 3px 0 var(--border)}
+.diagram-wrap svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tldr-box{background:#f0fde4;border:1.5px solid #bbf7d0;border-left:4px solid var(--green-dk);
+  border-radius:10px;padding:20px 24px;margin:0 0 40px}
+.tldr-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--green-dk);margin-bottom:10px}
+.tldr-box ul{margin:0 0 0 18px}
+.tldr-box li{font-size:.9rem;color:#1a2e05;margin-bottom:5px}
+.gotcha-box{background:#fff5f5;border:1.5px solid #fecaca;border-left:4px solid #dc2626;
+  border-radius:10px;padding:20px 24px;margin:32px 0}
+.gotcha-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:#dc2626;margin-bottom:10px}
+.gotcha-box ol{margin:0 0 0 18px}
+.gotcha-box li{font-size:.9rem;color:#450a0a;margin-bottom:6px;line-height:1.6}
+.chapter-nav{display:flex;justify-content:space-between;
+  margin-top:80px;padding-top:32px;border-top:1.5px solid var(--border);gap:16px}
+.ch-nav-btn{text-decoration:none;color:var(--text);
+  border:1.5px solid var(--border);border-radius:10px;
+  padding:14px 20px;background:var(--surface);
+  font-size:13px;font-weight:600;transition:all .15s;max-width:48%}
+.ch-nav-btn:hover{border-color:var(--text);box-shadow:3px 3px 0 var(--text)}
+.ch-nav-next{text-align:right;margin-left:auto}
+.nav-dir{font-size:11px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.07em;margin-bottom:4px}
+@media(max-width:680px){
+  nav{padding:0 20px}.page-wrap{padding:40px 20px 60px}
+  .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">
+    <div class="nav-logo-icon">&#129302;</div>AI Engineering
+  </a>
+  <a href="../index.html" class="nav-back">&larr; All Chapters</a>
+</nav>
+<main class="page-wrap">
+  <header class="ch-header">
+    <div class="ch-num-label">Chapter 03</div>
+    <h1>The Hidden Costs of LLM Calls in Production</h1>
+  </header>
+  <div class="content">
+<div class="tldr-box">
+<h3>TL;DR</h3>
+<ul>
+<li>At 50k agent runs/day, naive LLM calling costs $15k-$60k/month. Three patterns cut it by 10x.</li>
+<li>Semantic caching: identical or near-identical questions return cached answers without hitting the LLM.</li>
+<li>Model routing: classify query complexity and route simple ones to cheap models (GPT-3.5 / Haiku).</li>
+<li>Context budgeting: rolling window summarisation keeps token counts bounded across long agent runs.</li>
+<li>The compounding effect: all three together reduce cost per query from $0.12 to under $0.01.</li>
+</ul>
+</div>
+
+<h2>The math that should scare you</h2>
+<p>Let's be explicit. Your Engineering Wiki Agent handles queries for 3,000 engineers. Assume each engineer asks 15 questions per day. That is 45,000 queries/day.</p>
+<p>Each query: 1,500 tokens input (system prompt + retrieved context) + 400 tokens output = ~1,900 tokens. At GPT-4o pricing ($0.005/1K input, $0.015/1K output):</p>
+<pre><code class="language-text">Per query:  (1.5 x $0.005) + (0.4 x $0.015) = $0.0075 + $0.006 = $0.0135
+Per day:    45,000 x $0.0135 = $607.50
+Per month:  $18,225</code></pre>
+<p>That is before retries, eval calls, and agent tool-use reasoning steps which add a 2-5x multiplier. Real monthly spend: <strong>$40k-$90k</strong>. At that scale, optimisation is survival.</p>
+<blockquote>Token cost scales linearly with queries but context window size scales with agent complexity. The two compound each other.</blockquote>
+<hr>
+
+<h2>Optimisation 1: Semantic caching</h2>
+<p>60-70% of questions in any engineering org are near-duplicates. "How do I restart the payment service?" and "What is the command to restart payment-svc?" are semantically identical. Semantic caching embeds every incoming query, searches a vector cache for similar past queries, and returns the cached answer if similarity exceeds a threshold - skipping the LLM entirely.</p>
+
+<div class="diagram-wrap">
+<svg viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="arr-c" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker>
+<marker id="arr-c2" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#16a34a"/></marker>
+<marker id="arr-c3" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#dc2626"/></marker></defs>
+<rect x="10" y="70" width="90" height="44" rx="8" fill="#f9f9f9" stroke="#888" stroke-width="1.5"/>
+<text x="55" y="89" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#333">User Query</text>
+<text x="55" y="106" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">"restart payment?"</text>
+<line x1="100" y1="92" x2="128" y2="92" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-c)"/>
+<rect x="130" y="60" width="110" height="64" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="185" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Embed Query</text>
+<text x="185" y="100" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">text-embedding-3-small</text>
+<text x="185" y="115" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">$0.00002 / query</text>
+<line x1="240" y1="92" x2="268" y2="92" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-c)"/>
+<rect x="270" y="60" width="120" height="64" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
+<text x="330" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#92400e">Redis Cache</text>
+<text x="330" y="100" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">vector search</text>
+<text x="330" y="115" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">sim &gt; 0.92?</text>
+<line x1="330" y1="60" x2="330" y2="30" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-c2)"/>
+<rect x="258" y="6" width="144" height="22" rx="5" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="330" y="22" text-anchor="middle" font-family="Caveat,cursive" font-size="11" font-weight="600" fill="#16a34a">HIT: return cached ($0)</text>
+<line x1="390" y1="92" x2="418" y2="92" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-c3)"/>
+<rect x="420" y="60" width="110" height="64" rx="8" fill="#fff5f5" stroke="#fecaca" stroke-width="1.5"/>
+<text x="475" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#dc2626">MISS: LLM call</text>
+<text x="475" y="100" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">GPT-4o: $0.013</text>
+<text x="475" y="115" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">store in cache</text>
+</svg>
+</div>
+
+<pre><code class="language-python"># semantic_cache.py
+import redis, json, numpy as np
+from openai import OpenAI
+
+client = OpenAI()
+r = redis.Redis(host="localhost", port=6379, decode_responses=True)
+
+CACHE_THRESHOLD = 0.92
+CACHE_TTL_S     = 86400  # 24h
+
+def embed(text):
+    return client.embeddings.create(model="text-embedding-3-small", input=text).data[0].embedding
+
+def cosine(a, b):
+    a, b = np.array(a), np.array(b)
+    return float(np.dot(a,b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+
+def cache_lookup(query):
+    q_emb = embed(query)
+    for key in r.scan_iter("cache:emb:*"):
+        cached_emb = json.loads(r.get(key))
+        if cosine(q_emb, cached_emb) >= CACHE_THRESHOLD:
+            return r.get(key.replace("cache:emb:", "cache:ans:"))
+    return None
+
+def cache_store(query, answer):
+    import hashlib
+    h = hashlib.sha256(query.encode()).hexdigest()[:16]
+    r.setex(f"cache:emb:{h}", CACHE_TTL_S, json.dumps(embed(query)))
+    r.setex(f"cache:ans:{h}", CACHE_TTL_S, answer)
+
+def query_with_cache(agent, question):
+    cached = cache_lookup(question)
+    if cached:
+        return cached           # LLM call skipped
+    result = agent.run(question)
+    cache_store(question, result.answer)
+    return result.answer</code></pre>
+<p>A 65% cache hit rate on 45k daily queries saves 29,250 LLM calls/day - roughly $390/day at GPT-4o pricing.</p>
+<hr>
+
+<h2>Optimisation 2: Model routing by complexity</h2>
+<p>Not every query needs GPT-4o. Route simple factual lookups to fast, cheap models; route complex multi-step reasoning to the frontier model.</p>
+
+<pre><code class="language-python"># model_router.py
+from openai import OpenAI
+client = OpenAI()
+
+ROUTER_PROMPT = """Classify this query into one complexity tier:
+SIMPLE   - factual lookup, single-step
+MODERATE - multi-step reasoning, some synthesis
+COMPLEX  - multi-document synthesis, code generation, expert analysis
+Respond with only the tier name. Query: {query}"""
+
+MODEL_MAP = {
+    "SIMPLE":   "gpt-3.5-turbo",
+    "MODERATE": "gpt-4o-mini",
+    "COMPLEX":  "gpt-4o",
+}
+
+def route(query):
+    tier = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role":"user","content": ROUTER_PROMPT.format(query=query)}],
+        max_tokens=10, temperature=0,
+    ).choices[0].message.content.strip().upper()
+    return MODEL_MAP.get(tier, "gpt-4o-mini")</code></pre>
+
+<table>
+<thead><tr><th>Query type</th><th>% of volume</th><th>Model</th><th>Cost/query</th><th>vs GPT-4o</th></tr></thead>
+<tbody>
+<tr><td>Simple factual</td><td>45%</td><td>GPT-3.5-turbo</td><td>$0.0008</td><td>94% cheaper</td></tr>
+<tr><td>Moderate</td><td>35%</td><td>GPT-4o-mini</td><td>$0.0003</td><td>98% cheaper</td></tr>
+<tr><td>Complex</td><td>20%</td><td>GPT-4o</td><td>$0.0135</td><td>baseline</td></tr>
+<tr><td><strong>Blended average</strong></td><td>100%</td><td>-</td><td><strong>$0.0033</strong></td><td><strong>75% cheaper</strong></td></tr>
+</tbody>
+</table>
+<hr>
+
+<h2>Optimisation 3: Context window budgeting</h2>
+<p>As agents accumulate conversation history, input token count grows with every turn. A 20-step agent with full history can hit 40k+ tokens per LLM call.</p>
+
+<pre><code class="language-python"># context_budget.py
+import tiktoken
+enc = tiktoken.encoding_for_model("gpt-4o")
+MAX_CONTEXT_TOKENS = 12_000
+
+def count_tokens(messages):
+    return sum(len(enc.encode(m["content"])) for m in messages)
+
+def trim_messages(messages, system):
+    system_tok = len(enc.encode(system))
+    budget = MAX_CONTEXT_TOKENS - system_tok - 500
+
+    recent  = messages[-4:]    # always keep last 4 verbatim
+    history = messages[:-4]
+
+    if history and count_tokens(history) > budget * 0.4:
+        summary = summarise_history(history)   # one cheap LLM call
+        history = [{"role":"assistant","content":f"[Prior context]: {summary}"}]
+
+    trimmed = history + recent
+    while count_tokens(trimmed) > budget and len(trimmed) > 4:
+        trimmed.pop(0)
+
+    return [{"role":"system","content":system}] + trimmed</code></pre>
+
+<div class="gotcha-box">
+<h3>&#9888; Common Mistakes &amp; Gotchas</h3>
+<ol>
+<li><strong>Cache threshold too low (e.g. 0.80).</strong> You will return wrong answers for similar but factually different questions. Start at 0.92 and measure the hit rate before lowering.</li>
+<li><strong>Routing with the same model you are routing to.</strong> Using GPT-4o to decide whether to use GPT-4o defeats the purpose. The router should always be your cheapest model.</li>
+<li><strong>Not invalidating the cache on doc updates.</strong> Your wiki changes daily. Tie cache TTL to your wiki update frequency, or tag cache entries by document version.</li>
+<li><strong>Counting only output tokens.</strong> Input tokens dominate volume. A 1,500-token system prompt x 45,000 queries = 67.5M input tokens/day.</li>
+<li><strong>Forgetting embedding costs.</strong> At high volume, use a local embedding model (sentence-transformers) for cache lookups to make them near-free.</li>
+</ol>
+</div>
+
+  <nav class="chapter-nav">
+    <a class="ch-nav-btn" href="chapter-02-llm-eval-harnesses-ci-cd.html"><div class="nav-dir">&larr; Previous</div>LLM Eval Harnesses in CI/CD</a>
+    <a class="ch-nav-btn ch-nav-next" href="chapter-04-multi-agent-orchestration-fault-tolerance.html"><div class="nav-dir">Next &rarr;</div>Multi-Agent Orchestration: Designing for Fault Tolerance</a>
+  </nav>
+  </div>
+</main>
+</body>
+</html>
