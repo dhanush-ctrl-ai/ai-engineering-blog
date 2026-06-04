@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ch11: Streaming Responses & Real-Time Agent Output - AI Engineering Series</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f2ed;--surface:#fff;--border:#e2e2da;
+  --text:#111;--muted:#666660;--green:#c8f135;--green-dk:#a8d010;
+  --dot:#d8d8d0;--code-bg:#1e1e2e;--code-text:#cdd6f4;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
+  line-height:1.75;font-size:16px;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;
+  background-image:radial-gradient(circle,var(--dot) 1px,transparent 1px);
+  background-size:28px 28px;pointer-events:none;z-index:0;opacity:.45}
+nav{position:sticky;top:0;z-index:100;background:rgba(242,242,237,.9);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  padding:0 48px;height:60px;display:flex;align-items:center;
+  justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;
+  font-family:'Syne',sans-serif;font-size:17px;font-weight:800;
+  color:var(--text);text-decoration:none}
+.nav-logo-icon{width:32px;height:32px;background:var(--text);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav-back{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;
+  border:1.5px solid var(--border);padding:6px 14px;border-radius:8px;
+  background:var(--surface);transition:border-color .15s,color .15s}
+.nav-back:hover{border-color:var(--text);color:var(--text)}
+.page-wrap{position:relative;z-index:1;max-width:780px;margin:0 auto;
+  padding:60px 48px 100px}
+.ch-header{margin-bottom:52px}
+.ch-num-label{font-size:12px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:12px;
+  display:flex;align-items:center;gap:10px}
+.ch-num-label::before{content:"";width:20px;height:2px;
+  background:var(--green);display:inline-block;border-radius:2px}
+h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);
+  font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:20px}
+.content h2{font-family:'Syne',sans-serif;font-size:1.45rem;font-weight:800;
+  margin:52px 0 14px;letter-spacing:-.02em;
+  padding-bottom:10px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.05rem;font-weight:700;margin:32px 0 10px}
+.content p{margin-bottom:18px;color:#2a2a2a}
+.content ul,.content ol{margin:0 0 18px 24px}
+.content li{margin-bottom:6px;color:#2a2a2a}
+.content strong{color:var(--text);font-weight:700}
+.content hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+.content blockquote{background:var(--surface);
+  border:1.5px solid var(--border);border-left:4px solid var(--green);
+  border-radius:0 10px 10px 0;padding:16px 20px;margin:24px 0;
+  font-size:.95rem;color:var(--muted)}
+.content table{width:100%;border-collapse:collapse;margin:24px 0;
+  font-size:13.5px;background:var(--surface);
+  border-radius:10px;overflow:hidden;border:1.5px solid var(--border)}
+.content th{background:var(--text);color:#fff;padding:10px 14px;
+  text-align:left;font-weight:700;font-size:12px;letter-spacing:.04em}
+.content td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.content tr:last-child td{border-bottom:none}
+.content tr:nth-child(even) td{background:#fafaf6}
+.content code{background:#ebebeb;border-radius:4px;
+  padding:2px 6px;font-size:.85rem;font-family:'JetBrains Mono','Fira Code',monospace;
+  color:#c0392b}
+.content pre{background:var(--code-bg);border-radius:12px;
+  padding:24px;margin:24px 0;overflow-x:auto;
+  border:1.5px solid #313244;box-shadow:0 4px 24px rgba(0,0,0,.15)}
+.content pre code{background:none;color:var(--code-text);
+  font-size:.85rem;padding:0;border-radius:0}
+.diagram-wrap{margin:32px 0;background:var(--surface);
+  border:1.5px solid var(--border);border-radius:14px;
+  padding:32px 24px;overflow-x:auto;
+  box-shadow:3px 3px 0 var(--border)}
+.diagram-wrap svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tldr-box{background:#f0fde4;border:1.5px solid #bbf7d0;border-left:4px solid var(--green-dk);
+  border-radius:10px;padding:20px 24px;margin:0 0 40px}
+.tldr-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--green-dk);margin-bottom:10px}
+.tldr-box ul{margin:0 0 0 18px}
+.tldr-box li{font-size:.9rem;color:#1a2e05;margin-bottom:5px}
+.gotcha-box{background:#fff5f5;border:1.5px solid #fecaca;border-left:4px solid #dc2626;
+  border-radius:10px;padding:20px 24px;margin:32px 0}
+.gotcha-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:#dc2626;margin-bottom:10px}
+.gotcha-box ol{margin:0 0 0 18px}
+.gotcha-box li{font-size:.9rem;color:#450a0a;margin-bottom:6px;line-height:1.6}
+.chapter-nav{display:flex;justify-content:space-between;
+  margin-top:80px;padding-top:32px;border-top:1.5px solid var(--border);gap:16px}
+.ch-nav-btn{text-decoration:none;color:var(--text);
+  border:1.5px solid var(--border);border-radius:10px;
+  padding:14px 20px;background:var(--surface);
+  font-size:13px;font-weight:600;transition:all .15s;max-width:48%}
+.ch-nav-btn:hover{border-color:var(--text);box-shadow:3px 3px 0 var(--text)}
+.ch-nav-next{text-align:right;margin-left:auto}
+.nav-dir{font-size:11px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.07em;margin-bottom:4px}
+@media(max-width:680px){
+  nav{padding:0 20px}.page-wrap{padding:40px 20px 60px}
+  .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">
+    <div class="nav-logo-icon">&#129302;</div>AI Engineering
+  </a>
+  <a href="../index.html" class="nav-back">&larr; All Chapters</a>
+</nav>
+<main class="page-wrap">
+  <header class="ch-header">
+    <div class="ch-num-label">Chapter 11</div>
+    <h1>Streaming Responses & Real-Time Agent Output</h1>
+  </header>
+  <div class="content">
+<div class="tldr-box">
+<h3>TL;DR</h3>
+<ul>
+<li>Streaming cuts perceived latency from 10 seconds to under 1 second. Users see tokens appear immediately instead of waiting for the full response.</li>
+<li>Day One: SSE (Server-Sent Events) from your FastAPI server to a frontend that renders tokens as they arrive.</li>
+<li>Production: backpressure handling, mid-stream tool call interception, partial result caching, graceful degradation on stream interruption, and per-token cost tracking.</li>
+<li>Streaming and tool use interact in a non-obvious way: the model pauses streaming to emit a tool call, your code executes it, and then streaming resumes.</li>
+<li>Never parse a streaming response as complete JSON until the stream has finished.</li>
+</ul>
+</div>
+
+<h2>Why streaming matters for agents</h2>
+<p>A non-streaming agent query takes 8-15 seconds. The user sends a message and stares at a spinner while your system retrieves context, calls the LLM, waits for a full response, and then renders everything at once. For a simple question this is tolerable. For a complex multi-step reasoning trace, it feels broken.</p>
+<p>Streaming changes the user experience from "waiting for a response" to "watching the agent think." The first token appears in under a second. The quality of the response is identical - only the delivery changes.</p>
+<blockquote>Streaming does not make your agent faster. It makes the wait invisible by turning a 10-second pause into a 10-second typewriter effect.</blockquote>
+<hr>
+
+<h2>Day One: basic SSE streaming</h2>
+<pre><code class="language-python"># server.py - FastAPI streaming endpoint
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
+from openai import AsyncOpenAI
+import asyncio, json
+
+app = FastAPI()
+client = AsyncOpenAI()
+
+async def token_stream(query: str, context: str):
+    """Async generator that yields SSE-formatted chunks."""
+    stream = await client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role":"system","content":"You are a wiki assistant."},
+            {"role":"user","content":f"Context:\n{context}\n\nQ: {query}"}
+        ],
+        stream=True,
+        max_tokens=1000,
+    )
+    async for chunk in stream:
+        delta = chunk.choices[0].delta
+        if delta.content:
+            # SSE format: "data: {json}\n\n"
+            yield f"data: {json.dumps({'token': delta.content})}\n\n"
+        if chunk.choices[0].finish_reason == "stop":
+            yield f"data: {json.dumps({'done': True})}\n\n"
+
+@app.get("/query/stream")
+async def stream_query(q: str):
+    context = retrieve_context(q)  # blocking retrieval before stream starts
+    return StreamingResponse(
+        token_stream(q, context),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # disable nginx buffering
+        }
+    )</code></pre>
+
+<pre><code class="language-javascript">// frontend.js - consume the SSE stream
+const source = new EventSource('/query/stream?q=How+do+I+restart+payment-svc');
+let fullText = '';
+
+source.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.done) {
+    source.close();
+    return;
+  }
+  fullText += data.token;
+  document.getElementById('response').textContent = fullText;
+};</code></pre>
+<hr>
+
+<h2>Production: streaming with tool calls</h2>
+<p>Tool use introduces a complication: the model cannot stream while it is emitting a tool call. When the LLM decides to call a tool mid-response, it pauses the token stream, emits a complete tool call JSON payload, your code executes the tool, and then the stream resumes with the tool result injected into context. Your streaming handler needs to manage all three states.</p>
+
+<div class="diagram-wrap">
+<svg viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="arr-s" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker></defs>
+<!-- Token stream phase 1 -->
+<rect x="10" y="60" width="130" height="64" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="75" y="84" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Token Stream 1</text>
+<text x="75" y="102" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">"Based on the runbook,"</text>
+<text x="75" y="116" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">fast, token-by-token</text>
+<line x1="140" y1="92" x2="168" y2="92" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-s)"/>
+<!-- Tool call -->
+<rect x="170" y="40" width="150" height="104" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
+<text x="245" y="64" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#92400e">Tool Call (pause)</text>
+<text x="245" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">LLM emits full JSON</text>
+<text x="245" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">your code executes</text>
+<text x="245" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">result injected back</text>
+<text x="245" y="130" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">user sees: [searching...]</text>
+<line x1="320" y1="92" x2="348" y2="92" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-s)"/>
+<!-- Token stream phase 2 -->
+<rect x="350" y="60" width="130" height="64" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="415" y="84" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Token Stream 2</text>
+<text x="415" y="102" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">resumes after tool result</text>
+<text x="415" y="116" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">"the command is..."</text>
+<line x1="480" y1="92" x2="508" y2="92" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-s)"/>
+<!-- Done -->
+<rect x="510" y="70" width="80" height="44" rx="8" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="550" y="89" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#333">Done</text>
+<text x="550" y="106" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">stream closes</text>
+</svg>
+</div>
+
+<pre><code class="language-python"># streaming/agent_stream.py
+import asyncio, json
+from enum import Enum
+from openai import AsyncOpenAI
+
+client = AsyncOpenAI()
+
+class StreamEvent(Enum):
+    TOKEN       = "token"       # text token to render
+    TOOL_START  = "tool_start"  # agent is calling a tool
+    TOOL_END    = "tool_end"    # tool call finished, streaming resumes
+    ERROR       = "error"
+    DONE        = "done"
+
+async def agent_stream(query: str, tools: list, registry):
+    """Full agent stream with tool call interception."""
+    messages = [
+        {"role":"system","content":SYSTEM_PROMPT},
+        {"role":"user","content":query}
+    ]
+
+    while True:  # loop handles multi-turn tool use
+        stream = await client.chat.completions.create(
+            model="gpt-4o", messages=messages,
+            tools=tools, stream=True, max_tokens=1000,
+        )
+
+        accumulated_content = ""
+        accumulated_tool_calls = []
+        current_tool_call = None
+
+        async for chunk in stream:
+            delta = chunk.choices[0].delta
+            finish = chunk.choices[0].finish_reason
+
+            # Regular text token
+            if delta.content:
+                accumulated_content += delta.content
+                yield {"event": StreamEvent.TOKEN, "data": delta.content}
+
+            # Tool call started
+            if delta.tool_calls:
+                for tc_delta in delta.tool_calls:
+                    if tc_delta.index == len(accumulated_tool_calls):
+                        accumulated_tool_calls.append({
+                            "id": tc_delta.id or "",
+                            "name": tc_delta.function.name or "",
+                            "arguments": "",
+                        })
+                    accumulated_tool_calls[-1]["arguments"] += (tc_delta.function.arguments or "")
+
+            if finish == "tool_calls":
+                # Stream paused for tool execution
+                for tc in accumulated_tool_calls:
+                    yield {"event": StreamEvent.TOOL_START, "data": {"tool": tc["name"]}}
+                    args = json.loads(tc["arguments"])
+                    result = await registry.execute(tc["name"], args)
+                    yield {"event": StreamEvent.TOOL_END, "data": {"tool": tc["name"], "result": result}}
+
+                    # Inject tool result back into message history
+                    messages.append({"role":"assistant","tool_calls":[{
+                        "id": tc["id"], "type":"function",
+                        "function":{"name":tc["name"],"arguments":tc["arguments"]}
+                    }]})
+                    messages.append({"role":"tool","tool_call_id":tc["id"],"content":str(result)})
+                break  # exit inner loop to start new stream with tool results
+
+            if finish == "stop":
+                yield {"event": StreamEvent.DONE, "data": {}}
+                return  # fully done</code></pre>
+
+<h3>Backpressure: handling slow consumers</h3>
+<pre><code class="language-python"># If the client connection is slow, buffer tokens instead of dropping them
+async def buffered_stream(agent_gen, max_buffer: int = 50):
+    buffer = asyncio.Queue(maxsize=max_buffer)
+
+    async def producer():
+        async for event in agent_gen:
+            await buffer.put(event)
+        await buffer.put(None)  # sentinel
+
+    asyncio.create_task(producer())
+
+    while True:
+        event = await asyncio.wait_for(buffer.get(), timeout=30.0)
+        if event is None:
+            break
+        yield event</code></pre>
+
+<div class="gotcha-box">
+<h3>&#9888; Common Mistakes &amp; Gotchas</h3>
+<ol>
+<li><strong>Buffering the full response before streaming to the client.</strong> If your server collects the full LLM response and then streams it to the client, you have eliminated the latency benefit entirely. The client must receive tokens as the LLM generates them, not after.</li>
+<li><strong>Not disabling nginx/proxy buffering.</strong> Many reverse proxies buffer responses by default. Add <code>X-Accel-Buffering: no</code> to your SSE response headers, or configure your proxy to pass-through streaming responses immediately.</li>
+<li><strong>Parsing tool call arguments before the stream finishes.</strong> Tool call arguments arrive in fragments across multiple chunks. Concatenate all argument deltas before parsing as JSON - never parse a partial argument string.</li>
+<li><strong>No timeout on the tool execution pause.</strong> When the stream pauses for a tool call, the user sees a loading state. A hung tool call leaves the user in limbo. Apply the same timeout to tool executions in streaming mode as in non-streaming mode.</li>
+<li><strong>Losing the stream on reconnect without partial result caching.</strong> If a mobile user loses connectivity mid-stream, they must restart the full query. Cache the assembled tokens with the trace_id so the client can resume from where it disconnected.</li>
+</ol>
+</div>
+
+  <nav class="chapter-nav">
+    <a class="ch-nav-btn" href="chapter-10-agent-security-prompt-injection-sandboxing.html"><div class="nav-dir">&larr; Previous</div>Agent Security: Prompt Injection, Sandboxing & Least Privilege</a>
+    <a class="ch-nav-btn ch-nav-next" href="chapter-12-fine-tuning-vs-prompting.html"><div class="nav-dir">Next &rarr;</div>Fine-Tuning vs Prompting: When and How to Fine-Tune</a>
+  </nav>
+  </div>
+</main>
+</body>
+</html>
