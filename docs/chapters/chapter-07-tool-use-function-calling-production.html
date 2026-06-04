@@ -86,9 +86,7 @@ h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);font-weight:80
   nav{padding:0 20px}.nav-links{display:none}.page-wrap{padding:40px 20px 60px}
   .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}</style></head><body>
 <nav><a href="../index.html" class="nav-logo"><div class="nav-logo-icon">&#129302;</div>AI Engineering</a>
-<ul class="nav-links"><li><a href="../index.html#chapters">Chapters</a></li>
-<li><a href="../index.html#stack">Stack</a></li>
-<li><a href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub</a></li></ul>
+<ul class="nav-links"><li><a href="../index.html#chapters">Chapters</a></li><li><a href="../index.html#stack">Stack</a></li><li><a href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub</a></li></ul>
 <a href="../index.html#chapters" class="nav-cta">All chapters &rarr;</a></nav>
 <main class="page-wrap"><header class="ch-header">
   <div class="ch-num-label">Chapter 07</div><h1>Tool Use & Function Calling in Production</h1></header>
@@ -114,34 +112,45 @@ h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);font-weight:80
 <p>When you pass tool schemas to an LLM, the model does not "call" the function. It generates a structured JSON payload that your code interprets as a function call request. You are always the one executing the tool. The LLM is just deciding which tool to invoke and with what arguments.</p>
 
 <div class="diagram-wrap">
-<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
-<defs><marker id="arr-t" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker></defs>
-<!-- User -->
-<rect x="10" y="90" width="90" height="44" rx="8" fill="#f9f9f9" stroke="#888" stroke-width="1.5"/>
-<text x="55" y="109" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="600" fill="#333">User Query</text>
-<text x="55" y="126" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">"Create a P1 ticket"</text>
-<line x1="100" y1="112" x2="128" y2="112" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-t)"/>
+<svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Function Calling Flow">
+<title>Function Calling: User query → LLM generates tool_call JSON → Your code validates and executes → External API → result back to LLM</title>
+<defs>
+  <marker id="ch07-grn" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker>
+  <marker id="ch07-gry" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#888"/></marker>
+</defs>
+
+<!-- USER -->
+<rect x="8" y="82" width="96" height="48" rx="8" fill="#f9f9f9" stroke="#888" stroke-width="1.5"/>
+<text x="56" y="101" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#333">User Query</text>
+<text x="56" y="119" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">"Create P1 ticket"</text>
+<line x1="104" y1="106" x2="126" y2="106" stroke="#a8d010" stroke-width="2" marker-end="url(#ch07-grn)"/>
+
 <!-- LLM -->
-<rect x="130" y="68" width="130" height="88" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
-<text x="195" y="96" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="600" fill="#4338ca">LLM</text>
-<text x="195" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">sees tool schemas</text>
-<text x="195" y="130" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">generates JSON</text>
-<text x="195" y="146" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">tool_call payload</text>
-<line x1="260" y1="112" x2="288" y2="112" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-t)"/>
-<!-- Your code -->
-<rect x="290" y="68" width="140" height="88" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
-<text x="360" y="90" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="600" fill="#92400e">Your Code</text>
-<text x="360" y="108" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">validates args</text>
-<text x="360" y="124" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">enforces timeout</text>
-<text x="360" y="140" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">EXECUTES the tool</text>
-<line x1="430" y1="112" x2="458" y2="112" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-t)"/>
-<!-- External system -->
-<rect x="460" y="80" width="110" height="64" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
-<text x="515" y="104" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="600" fill="#15803d">Jira / Slack</text>
-<text x="515" y="122" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">GitHub / Confluence</text>
-<!-- Result back -->
-<line x1="460" y1="152" x2="432" y2="160" stroke="#888" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr-t)"/>
-<text x="360" y="175" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">result injected back as tool_result message</text>
+<rect x="128" y="64" width="128" height="84" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+<text x="192" y="88" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#4338ca">LLM</text>
+<text x="192" y="106" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">reads tool schemas</text>
+<text x="192" y="122" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">outputs tool_call JSON</text>
+<text x="192" y="138" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">(does NOT execute it)</text>
+<line x1="256" y1="106" x2="278" y2="106" stroke="#a8d010" stroke-width="2" marker-end="url(#ch07-grn)"/>
+
+<!-- YOUR CODE -->
+<rect x="280" y="56" width="134" height="100" rx="8" fill="#fefce8" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="347" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#92400e">Your Code</text>
+<text x="347" y="100" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">① validate Pydantic schema</text>
+<text x="347" y="116" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">② check permissions</text>
+<text x="347" y="132" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">③ apply timeout + breaker</text>
+<text x="347" y="148" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">④ EXECUTE the tool</text>
+<line x1="414" y1="106" x2="436" y2="106" stroke="#a8d010" stroke-width="2" marker-end="url(#ch07-grn)"/>
+
+<!-- EXTERNAL API -->
+<rect x="438" y="72" width="116" height="68" rx="8" fill="#f0fde4" stroke="#16a34a" stroke-width="1.5"/>
+<text x="496" y="96" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#15803d">External API</text>
+<text x="496" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Jira / Slack</text>
+<text x="496" y="130" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">GitHub / Confluence</text>
+
+<!-- RESULT BACK (dashed) -->
+<line x1="438" y1="148" x2="290" y2="162" stroke="#888" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ch07-gry)"/>
+<text x="360" y="178" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">tool_result injected back → LLM continues reasoning</text>
 </svg>
 </div>
 
