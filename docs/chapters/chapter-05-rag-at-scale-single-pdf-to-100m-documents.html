@@ -86,9 +86,7 @@ h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);font-weight:80
   nav{padding:0 20px}.nav-links{display:none}.page-wrap{padding:40px 20px 60px}
   .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}</style></head><body>
 <nav><a href="../index.html" class="nav-logo"><div class="nav-logo-icon">&#129302;</div>AI Engineering</a>
-<ul class="nav-links"><li><a href="../index.html#chapters">Chapters</a></li>
-<li><a href="../index.html#stack">Stack</a></li>
-<li><a href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub</a></li></ul>
+<ul class="nav-links"><li><a href="../index.html#chapters">Chapters</a></li><li><a href="../index.html#stack">Stack</a></li><li><a href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub</a></li></ul>
 <a href="../index.html#chapters" class="nav-cta">All chapters &rarr;</a></nav>
 <main class="page-wrap"><header class="ch-header">
   <div class="ch-num-label">Chapter 05</div><h1>RAG at Scale: From a Single PDF to 100M Documents</h1></header>
@@ -122,46 +120,67 @@ h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);font-weight:80
 <p>The naive pipeline processes one document at a time: read - chunk - embed - store. At 50,000 docs with 2 seconds per doc, that is 28 hours. The fix is to parallelise across all four stages independently.</p>
 
 <div class="diagram-wrap">
-<svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
-<defs><marker id="arr-r" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker><marker id="arr-r2" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#888"/></marker></defs>
-<text x="10" y="20" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#666">Day One - Sequential (28 hrs for 50k docs)</text>
-<rect x="10" y="30" width="74" height="36" rx="6" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
-<text x="47" y="53" text-anchor="middle" font-family="Caveat,cursive" font-size="12" fill="#333">Read</text>
-<line x1="84" y1="48" x2="100" y2="48" stroke="#888" stroke-width="1.5" marker-end="url(#arr-r2)"/>
-<rect x="102" y="30" width="74" height="36" rx="6" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
-<text x="139" y="53" text-anchor="middle" font-family="Caveat,cursive" font-size="12" fill="#333">Chunk</text>
-<line x1="176" y1="48" x2="192" y2="48" stroke="#888" stroke-width="1.5" marker-end="url(#arr-r2)"/>
-<rect x="194" y="30" width="74" height="36" rx="6" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
-<text x="231" y="53" text-anchor="middle" font-family="Caveat,cursive" font-size="12" fill="#333">Embed</text>
-<line x1="268" y1="48" x2="284" y2="48" stroke="#888" stroke-width="1.5" marker-end="url(#arr-r2)"/>
-<rect x="286" y="30" width="74" height="36" rx="6" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
-<text x="323" y="53" text-anchor="middle" font-family="Caveat,cursive" font-size="12" fill="#333">Store</text>
-<text x="390" y="53" font-family="Caveat,cursive" font-size="12" fill="#dc2626">28 hours</text>
-<text x="10" y="105" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#15803d">Production - Parallel Workers (30 min for 50k docs)</text>
-<rect x="10" y="115" width="74" height="36" rx="6" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
-<text x="47" y="129" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#92400e">S3 + SQS</text>
-<text x="47" y="143" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#92400e">doc queue</text>
-<line x1="84" y1="133" x2="100" y2="133" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-r)"/>
-<rect x="102" y="106" width="90" height="74" rx="6" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
-<text x="147" y="125" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Read x 8</text>
-<text x="147" y="141" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">async workers</text>
-<text x="147" y="156" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">S3 parallel</text>
-<line x1="192" y1="143" x2="208" y2="143" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-r)"/>
-<rect x="210" y="106" width="90" height="74" rx="6" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
-<text x="255" y="125" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Chunk x 16</text>
-<text x="255" y="141" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">CPU-bound</text>
-<text x="255" y="156" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">ProcessPool</text>
-<line x1="300" y1="143" x2="316" y2="143" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-r)"/>
-<rect x="318" y="106" width="100" height="74" rx="6" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
-<text x="368" y="125" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#92400e">Embed GPU</text>
-<text x="368" y="141" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">BAAI/bge-large</text>
-<text x="368" y="156" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">batch=256, A10G</text>
-<line x1="418" y1="143" x2="434" y2="143" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-r)"/>
-<rect x="436" y="106" width="100" height="74" rx="6" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
-<text x="486" y="125" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Store x 4</text>
-<text x="486" y="141" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Pinecone bulk</text>
-<text x="486" y="156" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">1000/batch async</text>
-<text x="560" y="143" font-family="Caveat,cursive" font-size="12" fill="#15803d">30 min</text>
+<svg viewBox="0 0 700 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sequential vs Parallel Ingestion">
+<title>Day One sequential ingestion (28 hrs) vs Production parallel workers (30 min) for 50k docs</title>
+<defs>
+  <marker id="ch05-grn" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker>
+  <marker id="ch05-gry" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#888"/></marker>
+</defs>
+
+<!-- DAY ONE LABEL -->
+<text x="10" y="22" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#dc2626">Day One — Sequential  (28 hours for 50k docs)</text>
+<rect x="10" y="30" width="72" height="36" rx="6" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="46" y="53" text-anchor="middle" font-family="Caveat,cursive" font-size="12" fill="#333">Read</text>
+<line x1="82" y1="48" x2="98" y2="48" stroke="#888" stroke-width="1.5" marker-end="url(#ch05-gry)"/>
+<rect x="100" y="30" width="72" height="36" rx="6" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="136" y="53" text-anchor="middle" font-family="Caveat,cursive" font-size="12" fill="#333">Chunk</text>
+<line x1="172" y1="48" x2="188" y2="48" stroke="#888" stroke-width="1.5" marker-end="url(#ch05-gry)"/>
+<rect x="190" y="30" width="72" height="36" rx="6" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="226" y="53" text-anchor="middle" font-family="Caveat,cursive" font-size="12" fill="#333">Embed</text>
+<line x1="262" y1="48" x2="278" y2="48" stroke="#888" stroke-width="1.5" marker-end="url(#ch05-gry)"/>
+<rect x="280" y="30" width="72" height="36" rx="6" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="316" y="53" text-anchor="middle" font-family="Caveat,cursive" font-size="12" fill="#333">Store</text>
+<!-- 1 doc at a time label -->
+<text x="420" y="53" font-family="Caveat,cursive" font-size="12" fill="#dc2626">1 doc at a time → 28 hours total</text>
+
+<!-- PRODUCTION LABEL -->
+<text x="10" y="108" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#15803d">Production — Parallel Workers  (30 minutes for 50k docs)</text>
+
+<!-- S3 + SQS queue -->
+<rect x="10" y="118" width="80" height="52" rx="6" fill="#fefce8" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="50" y="138" text-anchor="middle" font-family="Caveat,cursive" font-size="11" font-weight="700" fill="#92400e">S3 + SQS</text>
+<text x="50" y="154" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#78350f">doc queue</text>
+<line x1="90" y1="144" x2="108" y2="144" stroke="#a8d010" stroke-width="2" marker-end="url(#ch05-grn)"/>
+
+<!-- READ WORKERS -->
+<rect x="110" y="106" width="96" height="76" rx="6" fill="#f0fde4" stroke="#16a34a" stroke-width="1.5"/>
+<text x="158" y="128" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#15803d">Read × 8</text>
+<text x="158" y="146" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">async workers</text>
+<text x="158" y="162" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">S3 parallel fetch</text>
+<line x1="206" y1="144" x2="224" y2="144" stroke="#a8d010" stroke-width="2" marker-end="url(#ch05-grn)"/>
+
+<!-- CHUNK WORKERS -->
+<rect x="226" y="106" width="96" height="76" rx="6" fill="#f0fde4" stroke="#16a34a" stroke-width="1.5"/>
+<text x="274" y="128" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#15803d">Chunk × 16</text>
+<text x="274" y="146" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">CPU-bound</text>
+<text x="274" y="162" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">ProcessPool</text>
+<line x1="322" y1="144" x2="340" y2="144" stroke="#a8d010" stroke-width="2" marker-end="url(#ch05-grn)"/>
+
+<!-- EMBED GPU -->
+<rect x="342" y="106" width="104" height="76" rx="6" fill="#fefce8" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="394" y="128" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#92400e">Embed GPU</text>
+<text x="394" y="146" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#78350f">BAAI/bge-large</text>
+<text x="394" y="162" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#78350f">batch = 256, A10G</text>
+<line x1="446" y1="144" x2="464" y2="144" stroke="#a8d010" stroke-width="2" marker-end="url(#ch05-grn)"/>
+
+<!-- STORE WORKERS -->
+<rect x="466" y="106" width="104" height="76" rx="6" fill="#f0fde4" stroke="#16a34a" stroke-width="1.5"/>
+<text x="518" y="128" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#15803d">Store × 4</text>
+<text x="518" y="146" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">Pinecone bulk upsert</text>
+<text x="518" y="162" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">1 000 vectors / batch</text>
+
+<!-- Result -->
+<text x="590" y="148" font-family="Caveat,cursive" font-size="12" fill="#15803d">→ 30 min ✓</text>
 </svg>
 </div>
 
