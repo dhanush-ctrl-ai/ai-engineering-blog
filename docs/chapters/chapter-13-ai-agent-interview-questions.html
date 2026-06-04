@@ -84,12 +84,7 @@ h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);font-weight:80
 .nav-dir{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
 @media(max-width:680px){
   nav{padding:0 20px}.nav-links{display:none}.page-wrap{padding:40px 20px 60px}
-  .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}
-.q-meta{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;
-  padding:10px 0 18px;border-bottom:1px solid var(--border);margin-bottom:28px}
-.q-companies{font-size:12.5px;color:var(--muted)}
-.q-freq{font-size:13px;color:var(--green-dk);letter-spacing:.02em}
-</style></head><body>
+  .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}</style></head><body>
 <nav><a href="../index.html" class="nav-logo"><div class="nav-logo-icon">&#129302;</div>AI Engineering</a>
 <ul class="nav-links"><li><a href="../index.html#chapters">Chapters</a></li>
 <li><a href="../index.html#stack">Stack</a></li>
@@ -827,6 +822,24 @@ def trace_step(step_name):
 </table>
 
 <p><strong>The interviewer signal:</strong> The answer they want: "The first thing I check is the retrieval scores in the trace. If they are low, the retriever is the failure point. If they are high but the answer is still wrong, the LLM is hallucinating from training data rather than context. The trace_id makes this a five-minute diagnosis, not a two-hour investigation." Engineers who propose adding print statements to debug production multi-agent systems fail the operational maturity dimension.</p>
+
+<hr>
+
+<h2>Quick reference</h2>
+
+<table>
+<thead><tr><th>#</th><th>Question</th><th>Companies</th><th>Key answer terms</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Design a production AI agent system</td><td>Google, Meta, Amazon, Anthropic, Cohere</td><td>Celery task queue, circuit breaker, idempotency key, dead-letter queue, OTEL spans</td></tr>
+<tr><td>2</td><td>Prevent destructive agent actions</td><td>Anthropic, DeepMind, Microsoft, OpenAI</td><td>Pydantic schema validation, destructive action gate, permission scopes, injection sanitisation</td></tr>
+<tr><td>3</td><td>Detect quality regressions before production</td><td>Anthropic, Cohere, Databricks, Scale AI</td><td>Golden dataset from real logs, faithfulness + relevance scoring, CI eval harness, PR blocking</td></tr>
+<tr><td>4</td><td>Reduce LLM costs by 10x</td><td>Google, Amazon, Databricks, Cohere</td><td>Semantic cache (threshold 0.92), model routing (SIMPLE/MODERATE/COMPLEX), context budgeting</td></tr>
+<tr><td>5</td><td>Design cross-session agent memory</td><td>Anthropic, Microsoft, Glean, Notion AI</td><td>Write-time fact extraction, confidence filtering, vector retrieval, deduplication, TTL</td></tr>
+<tr><td>6</td><td>Stream responses with tool call interception</td><td>Vercel, Anthropic, Cohere, Perplexity</td><td>SSE, three states (stream/pause/resume), accumulate argument fragments, backpressure queue</td></tr>
+<tr><td>7</td><td>Fine-tune vs RAG vs prompting</td><td>Google, Meta, Anthropic, Mistral</td><td>RAG for knowledge, fine-tuning for behaviour, RAFT for both, always try prompting first</td></tr>
+<tr><td>8</td><td>Debug wrong answers in a multi-agent pipeline</td><td>Google, Databricks, Scale AI, W&amp;B</td><td>trace_id &rarr; Langfuse &rarr; retrieval scores &rarr; faithfulness &rarr; latency span</td></tr>
+</tbody>
+</table>
 
 <nav class="chapter-nav">
   <a class="ch-nav-btn" href="chapter-12-fine-tuning-vs-prompting.html"><div class="nav-dir">&larr; Previous</div>Fine-Tuning vs Prompting</a>
