@@ -86,9 +86,7 @@ h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);font-weight:80
   nav{padding:0 20px}.nav-links{display:none}.page-wrap{padding:40px 20px 60px}
   .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}</style></head><body>
 <nav><a href="../index.html" class="nav-logo"><div class="nav-logo-icon">&#129302;</div>AI Engineering</a>
-<ul class="nav-links"><li><a href="../index.html#chapters">Chapters</a></li>
-<li><a href="../index.html#stack">Stack</a></li>
-<li><a href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub</a></li></ul>
+<ul class="nav-links"><li><a href="../index.html#chapters">Chapters</a></li><li><a href="../index.html#stack">Stack</a></li><li><a href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub</a></li></ul>
 <a href="../index.html#chapters" class="nav-cta">All chapters &rarr;</a></nav>
 <main class="page-wrap"><header class="ch-header">
   <div class="ch-num-label">Chapter 08</div><h1>Memory Systems for Agents</h1></header>
@@ -113,39 +111,54 @@ h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);font-weight:80
 <h2>The four types of agent memory</h2>
 
 <div class="diagram-wrap">
-<svg viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg">
-<rect x="10" y="20" width="148" height="100" rx="10" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
-<text x="84" y="46" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#15803d">In-Context</text>
-<text x="84" y="66" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Conversation buffer</text>
-<text x="84" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Last N messages</text>
-<text x="84" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Lost on session end</text>
-<text x="84" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Fast. Free. Ephemeral.</text>
-<rect x="176" y="20" width="148" height="100" rx="10" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
-<text x="250" y="46" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#4338ca">Episodic</text>
-<text x="250" y="66" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">Past interactions</text>
-<text x="250" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">Summarised sessions</text>
-<text x="250" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">Stored in vector DB</text>
-<text x="250" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">"last week you asked..."</text>
-<rect x="342" y="20" width="148" height="100" rx="10" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
-<text x="416" y="46" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#92400e">Semantic</text>
-<text x="416" y="66" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">Facts about entities</text>
-<text x="416" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">User preferences</text>
-<text x="416" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">Team structures</text>
-<text x="416" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">"Riya owns payments"</text>
-<rect x="508" y="20" width="160" height="100" rx="10" fill="#fff5f5" stroke="#fecaca" stroke-width="1.5"/>
-<text x="588" y="46" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#dc2626">Procedural</text>
-<text x="588" y="66" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">Learned workflows</text>
-<text x="588" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">User's preferred format</text>
-<text x="588" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">Routing rules</text>
-<text x="588" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">"always page Riya first"</text>
+<svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Four Memory Types">
+<title>Four agent memory types: In-Context (ephemeral), Episodic (past sessions), Semantic (facts about entities), Procedural (learned workflows) — all feed into query-time retrieval</title>
+<defs>
+  <marker id="ch08a-grn" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker>
+</defs>
+
+<!-- Box 1: In-Context -->
+<rect x="8" y="14" width="154" height="100" rx="10" fill="#f0fde4" stroke="#16a34a" stroke-width="1.5"/>
+<text x="85" y="38" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#15803d">In-Context</text>
+<text x="85" y="57" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Conversation buffer</text>
+<text x="85" y="73" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Last N messages</text>
+<text x="85" y="89" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#dc2626">✗ lost on session end</text>
+<text x="85" y="105" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#666">Fast · Free · Ephemeral</text>
+
+<!-- Box 2: Episodic -->
+<rect x="182" y="14" width="154" height="100" rx="10" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+<text x="259" y="38" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#4338ca">Episodic</text>
+<text x="259" y="57" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">Past interactions</text>
+<text x="259" y="73" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">Summarised sessions</text>
+<text x="259" y="89" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">Stored in vector DB</text>
+<text x="259" y="105" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#666">"last week you asked…"</text>
+
+<!-- Box 3: Semantic -->
+<rect x="356" y="14" width="154" height="100" rx="10" fill="#fefce8" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="433" y="38" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#92400e">Semantic</text>
+<text x="433" y="57" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">Facts about entities</text>
+<text x="433" y="73" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">User preferences</text>
+<text x="433" y="89" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">Team structures</text>
+<text x="433" y="105" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#666">"Riya owns payments"</text>
+
+<!-- Box 4: Procedural -->
+<rect x="530" y="14" width="162" height="100" rx="10" fill="#fff5f5" stroke="#dc2626" stroke-width="1.5"/>
+<text x="611" y="38" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#dc2626">Procedural</text>
+<text x="611" y="57" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">Learned workflows</text>
+<text x="611" y="73" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">User format prefs</text>
+<text x="611" y="89" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">Routing rules</text>
+<text x="611" y="105" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#666">"always page Riya first"</text>
+
 <!-- Retrieval box -->
-<rect x="240" y="170" width="200" height="60" rx="10" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
-<text x="340" y="196" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#333">Query-time retrieval</text>
-<text x="340" y="216" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">relevant memories injected into context</text>
-<line x1="84" y1="120" x2="260" y2="170" stroke="#a8d010" stroke-width="1" stroke-dasharray="4,2"/>
-<line x1="250" y1="120" x2="300" y2="170" stroke="#a8d010" stroke-width="1" stroke-dasharray="4,2"/>
-<line x1="416" y1="120" x2="360" y2="170" stroke="#a8d010" stroke-width="1" stroke-dasharray="4,2"/>
-<line x1="588" y1="120" x2="420" y2="170" stroke="#a8d010" stroke-width="1" stroke-dasharray="4,2"/>
+<rect x="210" y="148" width="278" height="40" rx="10" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="349" y="165" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#333">Query-time retrieval</text>
+<text x="349" y="181" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">relevant memories injected into context window</text>
+
+<!-- Arrows from boxes to retrieval -->
+<line x1="85" y1="114" x2="260" y2="148" stroke="#a8d010" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ch08a-grn)"/>
+<line x1="259" y1="114" x2="310" y2="148" stroke="#a8d010" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ch08a-grn)"/>
+<line x1="433" y1="114" x2="388" y2="148" stroke="#a8d010" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ch08a-grn)"/>
+<line x1="611" y1="114" x2="438" y2="148" stroke="#a8d010" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ch08a-grn)"/>
 </svg>
 </div>
 
@@ -179,40 +192,63 @@ response = client.chat.completions.create(model="gpt-4o", messages=messages)</co
 <p>The production approach has two phases. At <strong>write time</strong>, when a conversation ends, an LLM extracts structured facts from the session and stores them deduplicated into a memory store. At <strong>read time</strong>, before each agent response, relevant memories are retrieved and injected into the context window as a compact memory block.</p>
 
 <div class="diagram-wrap">
-<svg viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg">
-<defs><marker id="arr-m8" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker></defs>
-<!-- Write path -->
-<text x="10" y="22" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#666">WRITE PATH (session end)</text>
-<rect x="10" y="32" width="110" height="44" rx="8" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
-<text x="65" y="51" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#333">Raw Conversation</text>
-<text x="65" y="68" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">full turn history</text>
-<line x1="120" y1="54" x2="148" y2="54" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m8)"/>
-<rect x="150" y="32" width="120" height="44" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
-<text x="210" y="51" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#4338ca">Fact Extractor LLM</text>
-<text x="210" y="68" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">structured JSON facts</text>
-<line x1="270" y1="54" x2="298" y2="54" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m8)"/>
-<rect x="300" y="32" width="120" height="44" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
-<text x="360" y="51" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#92400e">Deduplicator</text>
-<text x="360" y="68" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">merge + update existing</text>
-<line x1="420" y1="54" x2="448" y2="54" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m8)"/>
-<rect x="450" y="32" width="120" height="44" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
-<text x="510" y="47" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Memory Store</text>
-<text x="510" y="62" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">Vector DB + BM25 + Graph</text>
-<text x="510" y="76" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">Postgres entity store</text>
-<!-- Read path -->
-<text x="10" y="122" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#666">READ PATH (query time)</text>
-<rect x="10" y="132" width="110" height="44" rx="8" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
-<text x="65" y="151" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#333">New Query</text>
-<text x="65" y="168" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">"what about the P1?"</text>
-<line x1="120" y1="154" x2="448" y2="62" stroke="#a8d010" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr-m8)"/>
-<line x1="510" y1="76" x2="510" y2="132" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m8)"/>
-<rect x="450" y="132" width="120" height="44" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
-<text x="510" y="151" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Hybrid Retrieval</text>
-<text x="510" y="168" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">top-k relevant facts</text>
-<line x1="450" y1="154" x2="288" y2="154" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m8)"/>
-<rect x="150" y="132" width="136" height="44" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
-<text x="218" y="151" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#4338ca">Context Injection</text>
-<text x="218" y="168" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">memory block in prompt</text>
+<svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Memory Write and Read Paths">
+<title>Memory system: WRITE PATH extracts facts from session end and stores in vector DB. READ PATH retrieves relevant facts at query time and injects into context.</title>
+<defs>
+  <marker id="ch08b-grn" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker>
+</defs>
+
+<!-- WRITE PATH label -->
+<text x="10" y="22" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#4338ca">WRITE PATH  (runs at session end)</text>
+<rect x="8" y="30" width="106" height="52" rx="8" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="61" y="51" text-anchor="middle" font-family="Caveat,cursive" font-size="11" font-weight="700" fill="#333">Raw Conversation</text>
+<text x="61" y="67" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#666">full turn history</text>
+<line x1="114" y1="56" x2="134" y2="56" stroke="#a8d010" stroke-width="2" marker-end="url(#ch08b-grn)"/>
+
+<rect x="136" y="30" width="122" height="52" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+<text x="197" y="51" text-anchor="middle" font-family="Caveat,cursive" font-size="11" font-weight="700" fill="#4338ca">Fact Extractor LLM</text>
+<text x="197" y="67" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#4338ca">gpt-4o-mini  (cheap)</text>
+<line x1="258" y1="56" x2="278" y2="56" stroke="#a8d010" stroke-width="2" marker-end="url(#ch08b-grn)"/>
+
+<rect x="280" y="30" width="120" height="52" rx="8" fill="#fefce8" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="340" y="47" text-anchor="middle" font-family="Caveat,cursive" font-size="11" font-weight="700" fill="#92400e">Deduplicator</text>
+<text x="340" y="63" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#78350f">merge if sim &gt; 0.95</text>
+<text x="340" y="75" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#78350f">skip if conf &lt; 0.70</text>
+<line x1="400" y1="56" x2="420" y2="56" stroke="#a8d010" stroke-width="2" marker-end="url(#ch08b-grn)"/>
+
+<rect x="422" y="22" width="126" height="68" rx="8" fill="#f0fde4" stroke="#16a34a" stroke-width="2"/>
+<text x="485" y="44" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#15803d">Memory Store</text>
+<text x="485" y="62" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">Vector DB (Qdrant)</text>
+<text x="485" y="78" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">BM25 + entity graph</text>
+
+<!-- Divider -->
+<line x1="10" y1="118" x2="690" y2="118" stroke="#e2e2da" stroke-width="1" stroke-dasharray="6,4"/>
+
+<!-- READ PATH label -->
+<text x="10" y="140" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#15803d">READ PATH  (runs on every query)</text>
+
+<rect x="8" y="148" width="106" height="52" rx="8" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="61" y="169" text-anchor="middle" font-family="Caveat,cursive" font-size="11" font-weight="700" fill="#333">New Query</text>
+<text x="61" y="185" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#666">"what about the P1?"</text>
+
+<!-- Query embeds and searches memory store -->
+<line x1="114" y1="174" x2="420" y2="82" stroke="#a8d010" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#ch08b-grn)"/>
+
+<!-- Memory store returns results -->
+<line x1="485" y1="90" x2="485" y2="148" stroke="#a8d010" stroke-width="2" marker-end="url(#ch08b-grn)"/>
+<rect x="422" y="148" width="126" height="52" rx="8" fill="#f0fde4" stroke="#16a34a" stroke-width="1.5"/>
+<text x="485" y="169" text-anchor="middle" font-family="Caveat,cursive" font-size="11" font-weight="700" fill="#15803d">Hybrid Retrieval</text>
+<text x="485" y="185" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">top-5 relevant facts</text>
+
+<!-- Inject into context -->
+<line x1="422" y1="174" x2="270" y2="174" stroke="#a8d010" stroke-width="2" marker-end="url(#ch08b-grn)"/>
+<rect x="136" y="148" width="132" height="52" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+<text x="202" y="167" text-anchor="middle" font-family="Caveat,cursive" font-size="11" font-weight="700" fill="#4338ca">Context Injection</text>
+<text x="202" y="183" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#4338ca">## What I remember: …</text>
+
+<!-- Labels -->
+<text x="263" y="108" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#a8d010">embed query → search</text>
+<text x="360" y="162" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#a8d010">top-k facts returned</text>
 </svg>
 </div>
 
