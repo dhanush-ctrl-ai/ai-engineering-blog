@@ -86,9 +86,7 @@ h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);font-weight:80
   nav{padding:0 20px}.nav-links{display:none}.page-wrap{padding:40px 20px 60px}
   .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}</style></head><body>
 <nav><a href="../index.html" class="nav-logo"><div class="nav-logo-icon">&#129302;</div>AI Engineering</a>
-<ul class="nav-links"><li><a href="../index.html#chapters">Chapters</a></li>
-<li><a href="../index.html#stack">Stack</a></li>
-<li><a href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub</a></li></ul>
+<ul class="nav-links"><li><a href="../index.html#chapters">Chapters</a></li><li><a href="../index.html#stack">Stack</a></li><li><a href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub</a></li></ul>
 <a href="../index.html#chapters" class="nav-cta">All chapters &rarr;</a></nav>
 <main class="page-wrap"><header class="ch-header">
   <div class="ch-num-label">Chapter 01</div><h1>Building a Production AI Agent with Failure Recovery</h1></header>
@@ -114,38 +112,46 @@ h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);font-weight:80
 <p>ReAct (Reasoning + Acting) alternates between two operations: Thought (the LLM reasons about what to do next) and Action (your code executes a tool and returns an Observation). The loop continues until the LLM emits a final answer or a configured step limit is hit.</p>
 
 <div class="diagram-wrap">
-<svg viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
-<defs><marker id="arr1" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker></defs>
-<!-- Query -->
-<rect x="10" y="80" width="90" height="44" rx="8" fill="#f9f9f9" stroke="#888" stroke-width="1.5"/>
-<text x="55" y="99" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="600" fill="#333">Query</text>
+<svg viewBox="0 0 700 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ReAct Loop — Thought, Action, Observation cycle">
+<title>ReAct Loop: Thought → Action → Observation → loop</title>
+<defs>
+  <marker id="ch01-arr" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker>
+</defs>
+<!-- QUERY -->
+<rect x="8" y="78" width="94" height="48" rx="8" fill="#f9f9f9" stroke="#888" stroke-width="1.5"/>
+<text x="55" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#333">Query</text>
 <text x="55" y="116" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">"Create P1 ticket"</text>
-<line x1="100" y1="102" x2="128" y2="102" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr1)"/>
-<!-- Thought -->
-<rect x="130" y="68" width="120" height="68" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
-<text x="190" y="92" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="600" fill="#4338ca">Thought</text>
-<text x="190" y="110" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">LLM reasons</text>
-<text x="190" y="126" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">selects tool + args</text>
-<line x1="250" y1="102" x2="278" y2="102" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr1)"/>
-<!-- Action -->
-<rect x="280" y="68" width="120" height="68" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
-<text x="340" y="92" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="600" fill="#92400e">Action</text>
-<text x="340" y="110" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">your code runs tool</text>
-<text x="340" y="126" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">Jira / Slack / search</text>
-<line x1="400" y1="102" x2="428" y2="102" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr1)"/>
-<!-- Observation -->
-<rect x="430" y="68" width="120" height="68" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
-<text x="490" y="92" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="600" fill="#15803d">Observation</text>
-<text x="490" y="110" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">result injected</text>
-<text x="490" y="126" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">back into context</text>
-<!-- Loop arrow -->
-<path d="M490 136 Q490 165 340 165 Q190 165 190 136" stroke="#a8d010" stroke-width="1.5" fill="none" marker-end="url(#arr1)"/>
-<text x="340" y="158" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#a8d010">loop until final answer or step limit</text>
-<!-- Final answer -->
-<line x1="550" y1="102" x2="580" y2="102" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr1)"/>
-<rect x="582" y="82" width="86" height="40" rx="8" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
-<text x="625" y="100" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#333">Answer</text>
-<text x="625" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#666">or max steps hit</text>
+<line x1="102" y1="102" x2="126" y2="102" stroke="#a8d010" stroke-width="2" marker-end="url(#ch01-arr)"/>
+
+<!-- THOUGHT -->
+<rect x="128" y="62" width="128" height="80" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+<text x="192" y="88" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#4338ca">Thought</text>
+<text x="192" y="107" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">LLM reasons about</text>
+<text x="192" y="122" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">what to do next</text>
+<line x1="256" y1="102" x2="280" y2="102" stroke="#a8d010" stroke-width="2" marker-end="url(#ch01-arr)"/>
+
+<!-- ACTION -->
+<rect x="282" y="62" width="128" height="80" rx="8" fill="#fefce8" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="346" y="88" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#92400e">Action</text>
+<text x="346" y="107" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">Your code executes</text>
+<text x="346" y="122" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">Jira / Slack / wiki</text>
+<line x1="410" y1="102" x2="434" y2="102" stroke="#a8d010" stroke-width="2" marker-end="url(#ch01-arr)"/>
+
+<!-- OBSERVATION -->
+<rect x="436" y="62" width="128" height="80" rx="8" fill="#f0fde4" stroke="#16a34a" stroke-width="1.5"/>
+<text x="500" y="88" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#15803d">Observation</text>
+<text x="500" y="107" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Tool result injected</text>
+<text x="500" y="122" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">back into context</text>
+
+<!-- LOOP BACK arrow from Observation bottom → Thought bottom -->
+<path d="M500 142 Q500 175 346 175 Q192 175 192 142" stroke="#a8d010" stroke-width="2" fill="none" stroke-dasharray="6,3" marker-end="url(#ch01-arr)"/>
+<text x="346" y="170" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#a8d010">repeats until final answer or step limit hit</text>
+
+<!-- FINAL ANSWER -->
+<line x1="564" y1="102" x2="590" y2="102" stroke="#a8d010" stroke-width="2" marker-end="url(#ch01-arr)"/>
+<rect x="592" y="78" width="96" height="48" rx="8" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="640" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#333">Answer</text>
+<text x="640" y="116" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">or max steps hit</text>
 </svg>
 </div>
 
