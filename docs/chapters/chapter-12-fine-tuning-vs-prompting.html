@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ch12: Fine-Tuning vs Prompting: When and How to Fine-Tune - AI Engineering Series</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f2ed;--surface:#fff;--border:#e2e2da;
+  --text:#111;--muted:#666660;--green:#c8f135;--green-dk:#a8d010;
+  --dot:#d8d8d0;--code-bg:#1e1e2e;--code-text:#cdd6f4;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
+  line-height:1.75;font-size:16px;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;
+  background-image:radial-gradient(circle,var(--dot) 1px,transparent 1px);
+  background-size:28px 28px;pointer-events:none;z-index:0;opacity:.45}
+nav{position:sticky;top:0;z-index:100;background:rgba(242,242,237,.9);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  padding:0 48px;height:60px;display:flex;align-items:center;
+  justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;
+  font-family:'Syne',sans-serif;font-size:17px;font-weight:800;
+  color:var(--text);text-decoration:none}
+.nav-logo-icon{width:32px;height:32px;background:var(--text);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav-back{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;
+  border:1.5px solid var(--border);padding:6px 14px;border-radius:8px;
+  background:var(--surface);transition:border-color .15s,color .15s}
+.nav-back:hover{border-color:var(--text);color:var(--text)}
+.page-wrap{position:relative;z-index:1;max-width:780px;margin:0 auto;
+  padding:60px 48px 100px}
+.ch-header{margin-bottom:52px}
+.ch-num-label{font-size:12px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:12px;
+  display:flex;align-items:center;gap:10px}
+.ch-num-label::before{content:"";width:20px;height:2px;
+  background:var(--green);display:inline-block;border-radius:2px}
+h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);
+  font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:20px}
+.content h2{font-family:'Syne',sans-serif;font-size:1.45rem;font-weight:800;
+  margin:52px 0 14px;letter-spacing:-.02em;
+  padding-bottom:10px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.05rem;font-weight:700;margin:32px 0 10px}
+.content p{margin-bottom:18px;color:#2a2a2a}
+.content ul,.content ol{margin:0 0 18px 24px}
+.content li{margin-bottom:6px;color:#2a2a2a}
+.content strong{color:var(--text);font-weight:700}
+.content hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+.content blockquote{background:var(--surface);
+  border:1.5px solid var(--border);border-left:4px solid var(--green);
+  border-radius:0 10px 10px 0;padding:16px 20px;margin:24px 0;
+  font-size:.95rem;color:var(--muted)}
+.content table{width:100%;border-collapse:collapse;margin:24px 0;
+  font-size:13.5px;background:var(--surface);
+  border-radius:10px;overflow:hidden;border:1.5px solid var(--border)}
+.content th{background:var(--text);color:#fff;padding:10px 14px;
+  text-align:left;font-weight:700;font-size:12px;letter-spacing:.04em}
+.content td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.content tr:last-child td{border-bottom:none}
+.content tr:nth-child(even) td{background:#fafaf6}
+.content code{background:#ebebeb;border-radius:4px;
+  padding:2px 6px;font-size:.85rem;font-family:'JetBrains Mono','Fira Code',monospace;
+  color:#c0392b}
+.content pre{background:var(--code-bg);border-radius:12px;
+  padding:24px;margin:24px 0;overflow-x:auto;
+  border:1.5px solid #313244;box-shadow:0 4px 24px rgba(0,0,0,.15)}
+.content pre code{background:none;color:var(--code-text);
+  font-size:.85rem;padding:0;border-radius:0}
+.diagram-wrap{margin:32px 0;background:var(--surface);
+  border:1.5px solid var(--border);border-radius:14px;
+  padding:32px 24px;overflow-x:auto;
+  box-shadow:3px 3px 0 var(--border)}
+.diagram-wrap svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tldr-box{background:#f0fde4;border:1.5px solid #bbf7d0;border-left:4px solid var(--green-dk);
+  border-radius:10px;padding:20px 24px;margin:0 0 40px}
+.tldr-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--green-dk);margin-bottom:10px}
+.tldr-box ul{margin:0 0 0 18px}
+.tldr-box li{font-size:.9rem;color:#1a2e05;margin-bottom:5px}
+.gotcha-box{background:#fff5f5;border:1.5px solid #fecaca;border-left:4px solid #dc2626;
+  border-radius:10px;padding:20px 24px;margin:32px 0}
+.gotcha-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:#dc2626;margin-bottom:10px}
+.gotcha-box ol{margin:0 0 0 18px}
+.gotcha-box li{font-size:.9rem;color:#450a0a;margin-bottom:6px;line-height:1.6}
+.chapter-nav{display:flex;justify-content:space-between;
+  margin-top:80px;padding-top:32px;border-top:1.5px solid var(--border);gap:16px}
+.ch-nav-btn{text-decoration:none;color:var(--text);
+  border:1.5px solid var(--border);border-radius:10px;
+  padding:14px 20px;background:var(--surface);
+  font-size:13px;font-weight:600;transition:all .15s;max-width:48%}
+.ch-nav-btn:hover{border-color:var(--text);box-shadow:3px 3px 0 var(--text)}
+.ch-nav-next{text-align:right;margin-left:auto}
+.nav-dir{font-size:11px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.07em;margin-bottom:4px}
+@media(max-width:680px){
+  nav{padding:0 20px}.page-wrap{padding:40px 20px 60px}
+  .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">
+    <div class="nav-logo-icon">&#129302;</div>AI Engineering
+  </a>
+  <a href="../index.html" class="nav-back">&larr; All Chapters</a>
+</nav>
+<main class="page-wrap">
+  <header class="ch-header">
+    <div class="ch-num-label">Chapter 12</div>
+    <h1>Fine-Tuning vs Prompting: When and How to Fine-Tune</h1>
+  </header>
+  <div class="content">
+<div class="tldr-box">
+<h3>TL;DR</h3>
+<ul>
+<li>Fine-tuning is not a silver bullet. It solves a specific problem: teaching a model a consistent format, style, or domain vocabulary that prompting cannot reliably achieve.</li>
+<li>Day One: try prompting first. Always. Fine-tuning has a high upfront cost and a hidden maintenance cost that most teams underestimate.</li>
+<li>Fine-tune when: you need consistent output format that prompting produces unreliably, your system prompt is bloated beyond 4k tokens with examples, or latency is critical and you must shorten the context.</li>
+<li>Do not fine-tune when: you need factual knowledge (use RAG), you have fewer than 500 high-quality examples, or your task changes frequently.</li>
+<li>Eval-driven fine-tuning: always establish a baseline eval score before fine-tuning, and only ship the fine-tuned model if it beats the baseline on the test set.</li>
+</ul>
+</div>
+
+<h2>The most common fine-tuning mistake</h2>
+<p>An engineering team notices their agent sometimes returns answers in the wrong format - occasionally in markdown, occasionally in plain text, occasionally with bullet points, occasionally without. They spend three weeks fine-tuning GPT-4o-mini on 200 examples of "correct" format and deploy the result. Output format is now consistent. But answer quality has dropped 15%, the model now occasionally hallucinates domain terms it "learned" during fine-tuning, and every time the format requirements change they need another fine-tuning run.</p>
+<p>The correct fix was a better system prompt with explicit format instructions and a few-shot example. It would have taken 30 minutes.</p>
+<blockquote>Fine-tuning is the last resort, not the first. If you have not exhausted prompting strategies - few-shot examples, chain-of-thought, output format constraints - you are not ready to fine-tune.</blockquote>
+<hr>
+
+<h2>Decision framework: prompt vs fine-tune</h2>
+<table>
+<thead><tr><th>Situation</th><th>Recommendation</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>Inconsistent output format</td><td>Prompt first</td><td>Few-shot examples in the system prompt fix 80% of format issues</td></tr>
+<tr><td>Need domain-specific knowledge</td><td>RAG, not fine-tuning</td><td>Fine-tuning does not reliably inject facts; it adjusts behaviour</td></tr>
+<tr><td>System prompt &gt; 4k tokens of examples</td><td>Fine-tune</td><td>Distil examples into weights, shorten context, reduce cost</td></tr>
+<tr><td>Latency critical, context must be short</td><td>Fine-tune</td><td>Fine-tuned model needs fewer tokens to behave correctly</td></tr>
+<tr><td>Fewer than 500 quality examples</td><td>Prompt</td><td>Fine-tuning on sparse data causes overfitting and hallucination</td></tr>
+<tr><td>Task changes frequently</td><td>Prompt</td><td>Re-prompting is instant; re-fine-tuning takes hours and money</td></tr>
+<tr><td>Consistent tone / brand voice</td><td>Fine-tune</td><td>Style is hard to specify in prompts; easy to demonstrate in data</td></tr>
+<tr><td>Security: must not discuss certain topics</td><td>Fine-tune + RLHF</td><td>Prompting-only safety is fragile; fine-tuned refusals are robust</td></tr>
+</tbody>
+</table>
+<hr>
+
+<h2>Day One: few-shot prompting as fine-tuning substitute</h2>
+<pre><code class="language-python"># Before reaching for fine-tuning, exhaust few-shot prompting
+SYSTEM_PROMPT = """You are an engineering wiki assistant.
+
+Always respond in this EXACT format:
+---
+ANSWER: [one paragraph, max 150 words, no markdown]
+SOURCE: [filename without path]
+CONFIDENCE: [HIGH / MEDIUM / LOW]
+---
+
+Examples of correct format:
+
+User: How do I restart the payment service?
+Assistant:
+---
+ANSWER: Run kubectl rollout restart deployment/payment-svc in the infra cluster.
+Wait 2 minutes for pods to cycle. Check pod health with kubectl get pods -l app=payment-svc.
+SOURCE: kubernetes-runbooks.md
+CONFIDENCE: HIGH
+---
+
+User: What is the SLA for P2 incidents?
+Assistant:
+---
+ANSWER: P2 incidents require acknowledgment within 30 minutes and resolution within 4 hours.
+The on-call engineer must post an update in #incidents every 60 minutes until resolved.
+SOURCE: incident-response-policy.md
+CONFIDENCE: HIGH
+---"""</code></pre>
+<p>If two or three well-chosen few-shot examples achieve the format consistency you need, you have saved weeks of fine-tuning work. Only proceed to fine-tuning if this approach fails after iteration.</p>
+<hr>
+
+<h2>Production fine-tuning: the eval-driven workflow</h2>
+<p>Fine-tuning without an eval harness is guesswork. You have no way to know whether the fine-tuned model is better or worse than the base model on your actual use case. The workflow must be: baseline eval → collect training data → fine-tune → eval on held-out test set → deploy only if it beats baseline.</p>
+
+<div class="diagram-wrap">
+<svg viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="arr-ft" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker><marker id="arr-ft2" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#dc2626"/></marker></defs>
+<rect x="10" y="60" width="90" height="44" rx="8" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="55" y="79" text-anchor="middle" font-family="Caveat,cursive" font-size="11" font-weight="600" fill="#333">Baseline Eval</text>
+<text x="55" y="96" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#666">score: 0.84</text>
+<line x1="100" y1="82" x2="118" y2="82" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-ft)"/>
+<rect x="120" y="50" width="100" height="64" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+<text x="170" y="72" text-anchor="middle" font-family="Caveat,cursive" font-size="11" font-weight="600" fill="#4338ca">Collect Data</text>
+<text x="170" y="88" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#4338ca">500+ examples</text>
+<text x="170" y="104" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#4338ca">human-verified</text>
+<line x1="220" y1="82" x2="238" y2="82" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-ft)"/>
+<rect x="240" y="50" width="100" height="64" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
+<text x="290" y="72" text-anchor="middle" font-family="Caveat,cursive" font-size="11" font-weight="600" fill="#92400e">Fine-tune</text>
+<text x="290" y="88" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#78350f">OpenAI API or</text>
+<text x="290" y="104" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#78350f">LoRA on OSS model</text>
+<line x1="340" y1="82" x2="358" y2="82" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-ft)"/>
+<rect x="360" y="50" width="110" height="64" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="415" y="72" text-anchor="middle" font-family="Caveat,cursive" font-size="11" font-weight="600" fill="#15803d">Eval on Test Set</text>
+<text x="415" y="88" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">held-out 20%</text>
+<text x="415" y="104" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">never seen in training</text>
+<line x1="470" y1="70" x2="530" y2="50" stroke="#16a34a" stroke-width="1.5" marker-end="url(#arr-ft)"/>
+<rect x="532" y="30" width="80" height="32" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="572" y="51" text-anchor="middle" font-family="Caveat,cursive" font-size="11" font-weight="600" fill="#16a34a">Deploy &#10003;</text>
+<line x1="470" y1="96" x2="530" y2="116" stroke="#dc2626" stroke-width="1.5" marker-end="url(#arr-ft2)"/>
+<rect x="532" y="102" width="130" height="32" rx="6" fill="#fff5f5" stroke="#fecaca" stroke-width="1.5"/>
+<text x="597" y="123" text-anchor="middle" font-family="Caveat,cursive" font-size="10" font-weight="600" fill="#dc2626">Below baseline: discard &#10007;</text>
+</svg>
+</div>
+
+<pre><code class="language-python"># fine_tuning/prepare_data.py
+import json
+
+def format_training_example(question: str, context: str, ideal_answer: str) -> dict:
+    """OpenAI fine-tuning format: chat messages."""
+    return {
+        "messages": [
+            {"role": "system",  "content": SYSTEM_PROMPT_CONCISE},   # shorter than prod
+            {"role": "user",    "content": f"Context:\n{context}\n\nQ: {question}"},
+            {"role": "assistant","content": ideal_answer}
+        ]
+    }
+
+# Build training file - each line is a JSONL object
+training_examples = []
+for row in curated_examples:  # from your golden dataset + human review
+    ex = format_training_example(row["question"], row["context"], row["ideal_answer"])
+    training_examples.append(ex)
+
+# Split: 80% train, 20% test (never overlap)
+split = int(len(training_examples) * 0.8)
+train_set = training_examples[:split]
+test_set  = training_examples[split:]
+
+with open("train.jsonl", "w") as f:
+    for ex in train_set:
+        f.write(json.dumps(ex) + "\n")
+
+print(f"Training examples: {len(train_set)}")
+print(f"Test examples:     {len(test_set)}")</code></pre>
+
+<pre><code class="language-python"># fine_tuning/run.py
+from openai import OpenAI
+client = OpenAI()
+
+# Upload training file
+train_file = client.files.create(file=open("train.jsonl","rb"), purpose="fine-tune")
+print(f"Training file: {train_file.id}")
+
+# Launch fine-tuning job
+job = client.fine_tuning.jobs.create(
+    training_file=train_file.id,
+    model="gpt-4o-mini-2024-07-18",   # cheaper, faster base for FT
+    hyperparameters={
+        "n_epochs": 3,               # 3-4 epochs is standard starting point
+        "batch_size": "auto",
+        "learning_rate_multiplier": "auto",
+    },
+    suffix="wiki-agent-v1",          # custom model name suffix
+)
+print(f"Fine-tuning job: {job.id}")
+
+# Poll until done
+import time
+while True:
+    status = client.fine_tuning.jobs.retrieve(job.id)
+    print(f"Status: {status.status}")
+    if status.status in ("succeeded", "failed"):
+        break
+    time.sleep(60)
+
+if status.status == "succeeded":
+    print(f"Fine-tuned model: {status.fine_tuned_model}")
+    # Now run eval on test_set with this model before deploying</code></pre>
+
+<h3>LoRA fine-tuning on open-source models</h3>
+<pre><code class="language-python"># For Llama 3.1, Mistral, Qwen2 - fine-tune locally with LoRA
+from peft import LoraConfig, get_peft_model
+from transformers import AutoModelForCausalLM, AutoTokenizer, TrainingArguments
+from trl import SFTTrainer
+
+model_name = "meta-llama/Llama-3.1-8B-Instruct"
+model = AutoModelForCausalLM.from_pretrained(model_name, load_in_4bit=True)
+
+# LoRA: only train ~0.5% of weights, but adapt behaviour significantly
+lora_config = LoraConfig(
+    r=16,               # rank - higher = more capacity, more VRAM
+    lora_alpha=32,      # scaling factor
+    target_modules=["q_proj","v_proj"],  # which layers to adapt
+    lora_dropout=0.05,
+    bias="none",
+)
+model = get_peft_model(model, lora_config)
+model.print_trainable_parameters()
+# Output: trainable params: 6,815,744 || all params: 8,037,208,064 || trainable%: 0.0848
+
+trainer = SFTTrainer(
+    model=model,
+    train_dataset=train_dataset,
+    args=TrainingArguments(
+        output_dir="./wiki-agent-lora",
+        per_device_train_batch_size=4,
+        gradient_accumulation_steps=4,
+        num_train_epochs=3,
+        fp16=True,
+        save_steps=100,
+    ),
+)
+trainer.train()</code></pre>
+
+<div class="gotcha-box">
+<h3>&#9888; Common Mistakes &amp; Gotchas</h3>
+<ol>
+<li><strong>Fine-tuning on AI-generated examples.</strong> If your training data was generated by GPT-4 and then lightly edited, you are teaching a model to imitate GPT-4 - not to actually answer your users' questions well. Use real user interactions, human-verified answers.</li>
+<li><strong>No held-out test set.</strong> If you evaluate on training data, you will always see improvement. The test set must be completely separate from training data and must not influence hyperparameter choices.</li>
+<li><strong>Forgetting catastrophic forgetting.</strong> Fine-tuning on a narrow dataset can degrade the model's general capabilities. Always run a broad eval, not just task-specific evals, on the fine-tuned model before deploying.</li>
+<li><strong>Treating fine-tuning as a one-time event.</strong> Your data distribution drifts over time. A fine-tuned model trained on 6-month-old data will gradually fall behind a well-prompted base model with an updated system prompt. Plan for periodic re-fine-tuning.</li>
+<li><strong>Fine-tuning instead of fixing your data pipeline.</strong> If the model gives wrong answers because your RAG pipeline retrieves the wrong chunks, fine-tuning will not fix it. It will just make the model more confidently wrong. Fix the root cause first.</li>
+</ol>
+</div>
+
+  <nav class="chapter-nav">
+    <a class="ch-nav-btn" href="chapter-11-streaming-responses-real-time-agent-output.html"><div class="nav-dir">&larr; Previous</div>Streaming Responses & Real-Time Agent Output</a>
+    
+  </nav>
+  </div>
+</main>
+</body>
+</html>
