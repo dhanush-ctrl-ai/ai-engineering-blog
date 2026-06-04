@@ -86,9 +86,7 @@ h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);font-weight:80
   nav{padding:0 20px}.nav-links{display:none}.page-wrap{padding:40px 20px 60px}
   .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}</style></head><body>
 <nav><a href="../index.html" class="nav-logo"><div class="nav-logo-icon">&#129302;</div>AI Engineering</a>
-<ul class="nav-links"><li><a href="../index.html#chapters">Chapters</a></li>
-<li><a href="../index.html#stack">Stack</a></li>
-<li><a href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub</a></li></ul>
+<ul class="nav-links"><li><a href="../index.html#chapters">Chapters</a></li><li><a href="../index.html#stack">Stack</a></li><li><a href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub</a></li></ul>
 <a href="../index.html#chapters" class="nav-cta">All chapters &rarr;</a></nav>
 <main class="page-wrap"><header class="ch-header">
   <div class="ch-num-label">Chapter 11</div><h1>Streaming Responses & Real-Time Agent Output</h1></header>
@@ -170,32 +168,44 @@ source.onmessage = (event) => {
 <p>Tool use introduces a complication: the model cannot stream while it is emitting a tool call. When the LLM decides to call a tool mid-response, it pauses the token stream, emits a complete tool call JSON payload, your code executes the tool, and then the stream resumes with the tool result injected into context. Your streaming handler needs to manage all three states.</p>
 
 <div class="diagram-wrap">
-<svg viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg">
-<defs><marker id="arr-s" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker></defs>
-<!-- Token stream phase 1 -->
-<rect x="10" y="60" width="130" height="64" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
-<text x="75" y="84" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Token Stream 1</text>
-<text x="75" y="102" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">"Based on the runbook,"</text>
-<text x="75" y="116" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">fast, token-by-token</text>
-<line x1="140" y1="92" x2="168" y2="92" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-s)"/>
-<!-- Tool call -->
-<rect x="170" y="40" width="150" height="104" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
-<text x="245" y="64" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#92400e">Tool Call (pause)</text>
-<text x="245" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">LLM emits full JSON</text>
-<text x="245" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">your code executes</text>
-<text x="245" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">result injected back</text>
-<text x="245" y="130" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">user sees: [searching...]</text>
-<line x1="320" y1="92" x2="348" y2="92" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-s)"/>
-<!-- Token stream phase 2 -->
-<rect x="350" y="60" width="130" height="64" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
-<text x="415" y="84" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Token Stream 2</text>
-<text x="415" y="102" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">resumes after tool result</text>
-<text x="415" y="116" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">"the command is..."</text>
-<line x1="480" y1="92" x2="508" y2="92" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-s)"/>
+<svg viewBox="0 0 700 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Streaming with Tool Call Interception">
+<title>Streaming flow: Token Stream phase 1 → Tool Call pause (LLM emits JSON, code executes) → Token Stream phase 2 → Done</title>
+<defs>
+  <marker id="ch11-grn" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker>
+</defs>
+
+<!-- Phase 1 -->
+<rect x="8" y="58" width="138" height="72" rx="8" fill="#f0fde4" stroke="#16a34a" stroke-width="1.5"/>
+<text x="77" y="80" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#15803d">Token Stream 1</text>
+<text x="77" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">"Based on the runbook,"</text>
+<text x="77" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">fast, token by token</text>
+<text x="77" y="130" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#16a34a">user sees text appear</text>
+<line x1="146" y1="94" x2="170" y2="94" stroke="#a8d010" stroke-width="2" marker-end="url(#ch11-grn)"/>
+
+<!-- Tool Call pause -->
+<rect x="172" y="36" width="192" height="116" rx="8" fill="#fefce8" stroke="#f59e0b" stroke-width="2"/>
+<text x="268" y="62" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#92400e">Tool Call — PAUSE</text>
+<text x="268" y="80" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">① LLM emits full tool JSON</text>
+<text x="268" y="96" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">② your code executes tool</text>
+<text x="268" y="112" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">③ result injected back</text>
+<text x="268" y="132" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#92400e">user sees: [Searching wiki…]</text>
+<line x1="364" y1="94" x2="388" y2="94" stroke="#a8d010" stroke-width="2" marker-end="url(#ch11-grn)"/>
+
+<!-- Phase 2 -->
+<rect x="390" y="58" width="148" height="72" rx="8" fill="#f0fde4" stroke="#16a34a" stroke-width="1.5"/>
+<text x="464" y="80" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#15803d">Token Stream 2</text>
+<text x="464" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">resumes after tool result</text>
+<text x="464" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">"the command is…"</text>
+<line x1="538" y1="94" x2="562" y2="94" stroke="#a8d010" stroke-width="2" marker-end="url(#ch11-grn)"/>
+
 <!-- Done -->
-<rect x="510" y="70" width="80" height="44" rx="8" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
-<text x="550" y="89" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#333">Done</text>
-<text x="550" y="106" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">stream closes</text>
+<rect x="564" y="70" width="98" height="48" rx="8" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="613" y="90" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#333">Done</text>
+<text x="613" y="108" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">stream closes</text>
+
+<!-- Timeline label -->
+<line x1="8" y1="162" x2="692" y2="162" stroke="#e2e2da" stroke-width="1"/>
+<text x="350" y="176" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">time →  (total = LLM generation time, unchanged — only delivery is streamed)</text>
 </svg>
 </div>
 
