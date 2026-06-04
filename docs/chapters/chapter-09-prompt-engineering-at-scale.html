@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ch09: Prompt Engineering at Scale - AI Engineering Series</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f2ed;--surface:#fff;--border:#e2e2da;
+  --text:#111;--muted:#666660;--green:#c8f135;--green-dk:#a8d010;
+  --dot:#d8d8d0;--code-bg:#1e1e2e;--code-text:#cdd6f4;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
+  line-height:1.75;font-size:16px;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;
+  background-image:radial-gradient(circle,var(--dot) 1px,transparent 1px);
+  background-size:28px 28px;pointer-events:none;z-index:0;opacity:.45}
+nav{position:sticky;top:0;z-index:100;background:rgba(242,242,237,.9);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  padding:0 48px;height:60px;display:flex;align-items:center;
+  justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;
+  font-family:'Syne',sans-serif;font-size:17px;font-weight:800;
+  color:var(--text);text-decoration:none}
+.nav-logo-icon{width:32px;height:32px;background:var(--text);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav-back{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;
+  border:1.5px solid var(--border);padding:6px 14px;border-radius:8px;
+  background:var(--surface);transition:border-color .15s,color .15s}
+.nav-back:hover{border-color:var(--text);color:var(--text)}
+.page-wrap{position:relative;z-index:1;max-width:780px;margin:0 auto;
+  padding:60px 48px 100px}
+.ch-header{margin-bottom:52px}
+.ch-num-label{font-size:12px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:12px;
+  display:flex;align-items:center;gap:10px}
+.ch-num-label::before{content:"";width:20px;height:2px;
+  background:var(--green);display:inline-block;border-radius:2px}
+h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);
+  font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:20px}
+.content h2{font-family:'Syne',sans-serif;font-size:1.45rem;font-weight:800;
+  margin:52px 0 14px;letter-spacing:-.02em;
+  padding-bottom:10px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.05rem;font-weight:700;margin:32px 0 10px}
+.content p{margin-bottom:18px;color:#2a2a2a}
+.content ul,.content ol{margin:0 0 18px 24px}
+.content li{margin-bottom:6px;color:#2a2a2a}
+.content strong{color:var(--text);font-weight:700}
+.content hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+.content blockquote{background:var(--surface);
+  border:1.5px solid var(--border);border-left:4px solid var(--green);
+  border-radius:0 10px 10px 0;padding:16px 20px;margin:24px 0;
+  font-size:.95rem;color:var(--muted)}
+.content table{width:100%;border-collapse:collapse;margin:24px 0;
+  font-size:13.5px;background:var(--surface);
+  border-radius:10px;overflow:hidden;border:1.5px solid var(--border)}
+.content th{background:var(--text);color:#fff;padding:10px 14px;
+  text-align:left;font-weight:700;font-size:12px;letter-spacing:.04em}
+.content td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.content tr:last-child td{border-bottom:none}
+.content tr:nth-child(even) td{background:#fafaf6}
+.content code{background:#ebebeb;border-radius:4px;
+  padding:2px 6px;font-size:.85rem;font-family:'JetBrains Mono','Fira Code',monospace;
+  color:#c0392b}
+.content pre{background:var(--code-bg);border-radius:12px;
+  padding:24px;margin:24px 0;overflow-x:auto;
+  border:1.5px solid #313244;box-shadow:0 4px 24px rgba(0,0,0,.15)}
+.content pre code{background:none;color:var(--code-text);
+  font-size:.85rem;padding:0;border-radius:0}
+.diagram-wrap{margin:32px 0;background:var(--surface);
+  border:1.5px solid var(--border);border-radius:14px;
+  padding:32px 24px;overflow-x:auto;
+  box-shadow:3px 3px 0 var(--border)}
+.diagram-wrap svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tldr-box{background:#f0fde4;border:1.5px solid #bbf7d0;border-left:4px solid var(--green-dk);
+  border-radius:10px;padding:20px 24px;margin:0 0 40px}
+.tldr-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--green-dk);margin-bottom:10px}
+.tldr-box ul{margin:0 0 0 18px}
+.tldr-box li{font-size:.9rem;color:#1a2e05;margin-bottom:5px}
+.gotcha-box{background:#fff5f5;border:1.5px solid #fecaca;border-left:4px solid #dc2626;
+  border-radius:10px;padding:20px 24px;margin:32px 0}
+.gotcha-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:#dc2626;margin-bottom:10px}
+.gotcha-box ol{margin:0 0 0 18px}
+.gotcha-box li{font-size:.9rem;color:#450a0a;margin-bottom:6px;line-height:1.6}
+.chapter-nav{display:flex;justify-content:space-between;
+  margin-top:80px;padding-top:32px;border-top:1.5px solid var(--border);gap:16px}
+.ch-nav-btn{text-decoration:none;color:var(--text);
+  border:1.5px solid var(--border);border-radius:10px;
+  padding:14px 20px;background:var(--surface);
+  font-size:13px;font-weight:600;transition:all .15s;max-width:48%}
+.ch-nav-btn:hover{border-color:var(--text);box-shadow:3px 3px 0 var(--text)}
+.ch-nav-next{text-align:right;margin-left:auto}
+.nav-dir{font-size:11px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.07em;margin-bottom:4px}
+@media(max-width:680px){
+  nav{padding:0 20px}.page-wrap{padding:40px 20px 60px}
+  .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">
+    <div class="nav-logo-icon">&#129302;</div>AI Engineering
+  </a>
+  <a href="../index.html" class="nav-back">&larr; All Chapters</a>
+</nav>
+<main class="page-wrap">
+  <header class="ch-header">
+    <div class="ch-num-label">Chapter 09</div>
+    <h1>Prompt Engineering at Scale</h1>
+  </header>
+  <div class="content">
+<div class="tldr-box">
+<h3>TL;DR</h3>
+<ul>
+<li>A prompt is production code. It needs versioning, testing, and a deployment pipeline.</li>
+<li>Day One: prompt strings hardcoded in your Python files. Fast to change, impossible to track.</li>
+<li>Production: a prompt registry with semantic versioning, A/B testing via feature flags, regression-safe deploys, and automatic rollback on quality degradation.</li>
+<li>The most dangerous moment: changing a prompt without running your eval harness first. A 3-word change can silently break 40% of your test cases.</li>
+<li>Prompt templating with strict variable typing catches interpolation errors before they reach the LLM.</li>
+</ul>
+</div>
+
+<h2>Why prompts need the same discipline as code</h2>
+<p>In traditional software, a config change goes through code review, CI, and canary deployment before reaching 100% of traffic. A prompt change in most AI teams? Someone edits a string in <code>agent.py</code>, pushes to main, and it is live instantly with no visibility into what changed or whether quality degraded.</p>
+<p>Prompts are hyperparameters that run in production. They control model behaviour, output format, safety guardrails, and tool-calling patterns. Treating them as comments in your code is the fastest way to have a silent incident.</p>
+<blockquote>A model update with no prompt change can cause a regression. A prompt change with no eval run guarantees one eventually. The two variables must be tested together.</blockquote>
+<hr>
+
+<h2>Day One: hardcoded prompt strings</h2>
+<pre><code class="language-python"># agent.py - prompt buried in code, no versioning
+SYSTEM_PROMPT = """You are an AI assistant for an engineering wiki.
+Answer questions based on the retrieved context.
+If you don't know, say so. Be concise."""
+
+def run(query: str, context: str) -> str:
+    messages = [
+        {"role":"system","content":SYSTEM_PROMPT},
+        {"role":"user","content":f"Context:\n{context}\n\nQuestion: {query}"}
+    ]
+    return client.chat.completions.create(model="gpt-4o", messages=messages).choices[0].message.content</code></pre>
+<p>The problems: the prompt is coupled to the code deployment cycle, there is no history of what changed and when, you cannot A/B test two versions simultaneously, and rolling back requires a code deploy.</p>
+<hr>
+
+<h2>Production: a prompt registry</h2>
+<p>A prompt registry treats prompts as versioned artefacts stored separately from code. Think of it as a database table for prompts: each row is a version with a semantic version number, the template text, metadata, and eval results. Deploying a prompt is a database operation, not a git push.</p>
+
+<pre><code class="language-python"># prompts/registry.py
+from dataclasses import dataclass
+from datetime import datetime
+import postgres  # or any DB client
+
+@dataclass
+class PromptVersion:
+    name: str             # "wiki_agent_system"
+    version: str          # "2.3.1" - semver
+    template: str         # the actual prompt with {variable} slots
+    variables: list[str]  # required variables: ["context", "query"]
+    model: str            # intended model: "gpt-4o"
+    eval_score: float     # faithfulness score at deploy time: 0.91
+    deployed: bool        # is this the active version?
+    created_at: datetime
+
+class PromptRegistry:
+    def get_active(self, name: str) -> PromptVersion:
+        return db.query_one(
+            "SELECT * FROM prompts WHERE name=%s AND deployed=true", name
+        )
+
+    def render(self, name: str, **kwargs) -> str:
+        prompt = self.get_active(name)
+        # Validate all required variables are provided
+        missing = [v for v in prompt.variables if v not in kwargs]
+        if missing:
+            raise ValueError(f"Missing prompt variables: {missing}")
+        # Validate no extra variables (prevent injection via template)
+        extra = [k for k in kwargs if k not in prompt.variables]
+        if extra:
+            raise ValueError(f"Unknown prompt variables: {extra}")
+        return prompt.template.format(**kwargs)
+
+    def deploy(self, name: str, version: str, min_eval_score: float = 0.85) -> bool:
+        candidate = db.query_one(
+            "SELECT * FROM prompts WHERE name=%s AND version=%s", name, version
+        )
+        if candidate.eval_score < min_eval_score:
+            raise ValueError(
+                f"Cannot deploy: eval score {candidate.eval_score:.2f} < threshold {min_eval_score}"
+            )
+        # Atomic swap: deactivate current, activate new
+        with db.transaction():
+            db.execute("UPDATE prompts SET deployed=false WHERE name=%s AND deployed=true", name)
+            db.execute("UPDATE prompts SET deployed=true WHERE name=%s AND version=%s", name, version)
+        return True
+
+registry = PromptRegistry()</code></pre>
+
+<h3>The prompt template format</h3>
+<pre><code class="language-sql">-- Stored in DB (or YAML files in a prompts/ folder)
+INSERT INTO prompts (name, version, template, variables, model, eval_score, deployed) VALUES (
+  'wiki_agent_system',
+  '2.3.1',
+  'You are an AI assistant for an engineering wiki serving {num_engineers} engineers.
+
+Your role: Answer questions accurately using ONLY the retrieved context provided.
+Company: {company_name}. Tone: {tone}.
+
+RULES:
+1. If the answer is not in the context, say "I could not find this in the wiki."
+2. Always cite the source document: "According to {source_file}..."
+3. For runbook questions, include the exact command or step numbers.
+4. Never invent ticket numbers, people names, or system names.
+
+Retrieved context:
+{context}',
+  ARRAY['num_engineers','company_name','tone','source_file','context'],
+  'gpt-4o',
+  0.91,
+  true
+);</code></pre>
+
+<h3>A/B testing prompt versions</h3>
+<pre><code class="language-python"># prompts/ab_test.py
+import hashlib
+from feature_flags import get_flag  # LaunchDarkly, Statsig, etc.
+
+def get_prompt_for_user(prompt_name: str, user_id: str) -> PromptVersion:
+    """Route users to prompt variants based on feature flag bucketing."""
+    # Deterministic bucket: same user always gets same variant
+    bucket = int(hashlib.md5(user_id.encode()).hexdigest(), 16) % 100
+
+    # Feature flag defines: {"control": "2.3.1", "treatment": "2.4.0-beta", "split": 20}
+    flag = get_flag(f"prompt_ab_{prompt_name}")
+
+    if bucket < flag["split"]:
+        version = flag["treatment"]
+    else:
+        version = flag["control"]
+
+    return registry.get_version(prompt_name, version)
+
+# Track which version generated each response for analysis
+def log_response(user_id: str, prompt_version: str, quality_score: float):
+    analytics.track("prompt_response", {
+        "user_id": user_id,
+        "prompt_version": prompt_version,
+        "quality_score": quality_score,
+        "timestamp": now_iso(),
+    })</code></pre>
+
+<h3>Regression-safe deployment pipeline</h3>
+<pre><code class="language-python"># ci/deploy_prompt.py - runs in GitHub Actions on prompt file changes
+import sys
+from prompts.registry import PromptRegistry
+from tests.eval.runner import run_all_evals
+
+async def deploy_prompt_safely(prompt_name: str, new_version: str):
+    registry = PromptRegistry()
+    current = registry.get_active(prompt_name)
+    candidate = registry.get_version(prompt_name, new_version)
+
+    print(f"Evaluating {prompt_name} v{new_version} vs current v{current.version}...")
+
+    # Run full eval suite against candidate version
+    results = await run_all_evals(prompt_override=candidate.template)
+    new_score = results.avg_faithfulness
+
+    print(f"Current:   faithfulness={current.eval_score:.3f}")
+    print(f"Candidate: faithfulness={new_score:.3f}")
+
+    if new_score < current.eval_score - 0.02:   # 2% regression threshold
+        print(f"BLOCKED: score regressed by {current.eval_score - new_score:.3f}")
+        sys.exit(1)
+
+    if new_score < 0.85:
+        print(f"BLOCKED: score {new_score:.3f} below minimum threshold 0.85")
+        sys.exit(1)
+
+    # Update eval score in registry, then deploy
+    registry.update_eval_score(prompt_name, new_version, new_score)
+    registry.deploy(prompt_name, new_version)
+    print(f"Deployed {prompt_name} v{new_version} (score: {new_score:.3f})")</code></pre>
+
+<h2>Day One vs Production</h2>
+<table>
+<thead><tr><th>Dimension</th><th>Day One</th><th>Production</th></tr></thead>
+<tbody>
+<tr><td>Storage</td><td>Hardcoded in source code</td><td>Versioned DB table / YAML registry</td></tr>
+<tr><td>Deployment</td><td>Code push required</td><td>DB operation, instant, no deploy</td></tr>
+<tr><td>History</td><td>Git blame (if you're lucky)</td><td>Full version history with eval scores</td></tr>
+<tr><td>A/B testing</td><td>Not possible</td><td>Feature flag bucketing per user</td></tr>
+<tr><td>Rollback</td><td>Revert commit + redeploy</td><td>Set deployed=false, instant</td></tr>
+<tr><td>Safety gate</td><td>None</td><td>Eval score must pass before deploy allowed</td></tr>
+</tbody>
+</table>
+
+<div class="gotcha-box">
+<h3>&#9888; Common Mistakes &amp; Gotchas</h3>
+<ol>
+<li><strong>Changing model and prompt at the same time.</strong> If quality changes, you do not know whether it was the model or the prompt. Change one variable at a time and run evals between changes.</li>
+<li><strong>No regression threshold on deploy.</strong> A prompt that scores 0.91 on a previous eval run can drop to 0.83 with a new version. Gate deploys on absolute score AND delta from current production version.</li>
+<li><strong>f-strings instead of explicit variable lists.</strong> Python f-strings allow any variable in scope, making injection trivial. Use a template system that enforces an allowlist of variable names.</li>
+<li><strong>Prompt A/B tests without enough traffic.</strong> You need at least 200-300 responses per variant to detect a meaningful difference in quality scores. Do not conclude a test early based on 20 samples.</li>
+<li><strong>Storing prompts in environment variables.</strong> Env vars have no history, no atomic swap, and no eval gating. Use a real registry or at minimum a versioned YAML file in a prompts/ directory.</li>
+</ol>
+</div>
+
+  <nav class="chapter-nav">
+    <a class="ch-nav-btn" href="chapter-08-memory-systems-for-agents.html"><div class="nav-dir">&larr; Previous</div>Memory Systems for Agents</a>
+    <a class="ch-nav-btn ch-nav-next" href="chapter-10-agent-security-prompt-injection-sandboxing.html"><div class="nav-dir">Next &rarr;</div>Agent Security: Prompt Injection, Sandboxing & Least Privilege</a>
+  </nav>
+  </div>
+</main>
+</body>
+</html>
