@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="12-chapter series on building production AI agents for backend engineers."/>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="13-chapter series on building production AI agents for backend engineers."/>
   <title>AI Engineering &mdash; Blog Series</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
   <style>
@@ -22,9 +21,7 @@
     .nav-cta:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--text)}
     .hero{position:relative;z-index:1;padding:100px 48px 80px;text-align:center;max-width:1100px;margin:0 auto}
     .float-badge{position:absolute;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 16px;font-size:12px;font-weight:600;color:var(--muted);box-shadow:0 4px 16px rgba(0,0,0,.07);white-space:nowrap}
-    .float-1{top:80px;left:20px;transform:rotate(-4deg)}
-    .float-2{top:60px;right:20px;transform:rotate(3deg)}
-    .float-3{bottom:60px;left:40px;transform:rotate(2deg)}
+    .float-1{top:80px;left:20px;transform:rotate(-4deg)}.float-2{top:60px;right:20px;transform:rotate(3deg)}.float-3{bottom:60px;left:40px;transform:rotate(2deg)}
     .hero-tag{display:inline-flex;align-items:center;gap:8px;background:var(--green);border:1.5px solid var(--text);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:700;color:var(--text);margin-bottom:28px;box-shadow:2px 2px 0 var(--text)}
     .hero-tag::before{content:"&#9889;"}
     h1{font-family:'Syne',sans-serif;font-size:clamp(2.8rem,6vw,5rem);font-weight:800;line-height:1.05;letter-spacing:-.03em;color:var(--text);margin-bottom:24px}
@@ -32,9 +29,7 @@
     .hero-sub{font-size:1.1rem;color:var(--muted);max-width:560px;margin:0 auto 44px;line-height:1.7}
     .hero-stats{display:flex;justify-content:center;gap:0;margin-bottom:64px}
     .stat{padding:16px 36px;border:1.5px solid var(--border);background:var(--surface)}
-    .stat:first-child{border-radius:12px 0 0 12px}
-    .stat:last-child{border-radius:0 12px 12px 0;border-left:none}
-    .stat:not(:first-child):not(:last-child){border-left:none}
+    .stat:first-child{border-radius:12px 0 0 12px}.stat:last-child{border-radius:0 12px 12px 0;border-left:none}.stat:not(:first-child):not(:last-child){border-left:none}
     .stat-num{font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--text);line-height:1}
     .stat-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:4px}
     .usecase-strip{position:relative;z-index:1;max-width:860px;margin:0 auto 80px;padding:0 48px}
@@ -48,9 +43,7 @@
     .section-label::before{content:"";width:24px;height:2px;background:var(--green);border-radius:2px;display:inline-block}
     .chapters{display:flex;flex-direction:column;gap:2px;margin-bottom:80px}
     .chapter-card{background:var(--surface);border:1.5px solid var(--border);border-radius:0;padding:28px 32px;text-decoration:none;color:inherit;display:grid;grid-template-columns:64px 1fr auto;gap:24px;align-items:center;transition:background .15s,transform .15s;position:relative}
-    .chapter-card:first-child{border-radius:14px 14px 0 0}
-    .chapter-card:last-child{border-radius:0 0 14px 14px}
-    .chapter-card:not(:first-child){border-top:none}
+    .chapter-card:first-child{border-radius:14px 14px 0 0}.chapter-card:last-child{border-radius:0 0 14px 14px}.chapter-card:not(:first-child){border-top:none}
     .chapter-card:hover{background:#fafaf6;z-index:2;transform:scale(1.005);box-shadow:0 8px 32px rgba(0,0,0,.08);border-radius:12px!important}
     .ch-num{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;color:var(--border);line-height:1;user-select:none}
     .chapter-card:hover .ch-num{color:var(--green)}
@@ -82,151 +75,98 @@
     </ul>
     <a href="#chapters" class="nav-cta">Read the series &rarr;</a>
   </nav>
-
   <section class="hero">
     <div class="float-badge float-1">&#9889; Circuit breakers in 50 lines</div>
     <div class="float-badge float-2">&#128272; Prompt injection defence patterns</div>
-    <div class="float-badge float-3">&#128200; 50k agent runs/day architecture</div>
-
-    <div class="hero-tag">12-chapter deep-dive series</div>
+    <div class="float-badge float-3">&#127942; 8 FAANG interview questions answered</div>
+    <div class="hero-tag">13-chapter deep-dive series</div>
     <h1>Build AI Agents that<br/><span class="accent">Stay Up</span> in Production</h1>
-    <p class="hero-sub">
-      Everything a backend engineer needs to go from a naive agent loop
-      to a production runtime with fault tolerance, memory, security,
-      observability, and eval-driven deployment.
-    </p>
+    <p class="hero-sub">Everything a backend engineer needs to go from a naive agent loop to a production runtime with fault tolerance, memory, security, observability, and eval-driven deployment.</p>
     <div class="hero-stats">
-      <div class="stat"><div class="stat-num">12</div><div class="stat-label">Chapters</div></div>
-      <div class="stat"><div class="stat-num">12</div><div class="stat-label">Published</div></div>
+      <div class="stat"><div class="stat-num">13</div><div class="stat-label">Chapters</div></div>
+      <div class="stat"><div class="stat-num">13</div><div class="stat-label">Published</div></div>
       <div class="stat"><div class="stat-num">50k</div><div class="stat-label">Runs/day</div></div>
       <div class="stat"><div class="stat-num">100%</div><div class="stat-label">Free</div></div>
     </div>
   </section>
-
   <div class="usecase-strip">
     <div class="usecase-inner">
       <div class="usecase-icon">&#127963;</div>
       <div>
         <h3>The Running Use Case</h3>
-        <p>Your engineering org has a <strong>50,000-page internal wiki</strong>, queried by 3,000 engineers at 50,000 agent runs per day.
-        Every chapter solves one real failure mode in building that system &mdash; from the first agent loop to fine-tuning decisions at scale.</p>
+        <p>Your engineering org has a <strong>50,000-page internal wiki</strong>, queried by 3,000 engineers at 50,000 agent runs per day. Every chapter solves one real failure mode in building that system &mdash; from the first agent loop to FAANG interview questions.</p>
       </div>
     </div>
   </div>
-
   <div class="container">
-    <div id="chapters" class="section-label">All 12 Chapters</div>
+    <div id="chapters" class="section-label">All 13 Chapters</div>
     <div class="chapters">
       <a class="chapter-card" href="chapters/chapter-01-building-production-ai-agent-failure-recovery.html">
         <div class="ch-num">01</div>
-        <div class="ch-body">
-          <h2>Building a Production AI Agent with Failure Recovery</h2>
-          <p>From a naive while-loop that crashes at 2 AM to a hardened runtime with circuit breakers, dead-letter queues, idempotency keys, and saga compensation logic.</p>
-          <div class="ch-tags"><span class="tag">ReAct loop</span><span class="tag">Circuit breakers</span><span class="tag">Celery + Redis</span><span class="tag">Dead-letter queue</span><span class="tag">Saga pattern</span></div>
-        </div>
+        <div class="ch-body"><h2>Building a Production AI Agent with Failure Recovery</h2><p>From a naive while-loop that crashes at 2 AM to a hardened runtime with circuit breakers, dead-letter queues, idempotency keys, and saga compensation logic.</p><div class="ch-tags"><span class="tag">ReAct loop</span><span class="tag">Circuit breakers</span><span class="tag">Celery + Redis</span><span class="tag">Dead-letter queue</span><span class="tag">Saga pattern</span></div></div>
         <div class="ch-arrow">&rarr;</div>
       </a>
       <a class="chapter-card" href="chapters/chapter-02-llm-eval-harnesses-ci-cd.html">
         <div class="ch-num">02</div>
-        <div class="ch-body">
-          <h2>LLM Eval Harnesses in CI/CD</h2>
-          <p>Block agent regressions before they reach production. Build a pytest eval harness that runs on every PR and posts quality scores as a pull request comment.</p>
-          <div class="ch-tags"><span class="tag">Evals</span><span class="tag">GitHub Actions</span><span class="tag">LLM-as-judge</span><span class="tag">Faithfulness</span><span class="tag">Async workers</span></div>
-        </div>
+        <div class="ch-body"><h2>LLM Eval Harnesses in CI/CD</h2><p>Block agent regressions before they reach production. Build a pytest eval harness that runs on every PR and posts quality scores as a pull request comment.</p><div class="ch-tags"><span class="tag">Evals</span><span class="tag">GitHub Actions</span><span class="tag">LLM-as-judge</span><span class="tag">Faithfulness</span><span class="tag">Async workers</span></div></div>
         <div class="ch-arrow">&rarr;</div>
       </a>
       <a class="chapter-card" href="chapters/chapter-03-hidden-costs-llm-calls-production.html">
         <div class="ch-num">03</div>
-        <div class="ch-body">
-          <h2>The Hidden Costs of LLM Calls in Production</h2>
-          <p>Semantic caching, model routing by complexity, and context window budgeting. Cut LLM spend from $60k/month to under $6k without changing the product.</p>
-          <div class="ch-tags"><span class="tag">Semantic cache</span><span class="tag">Model routing</span><span class="tag">Context budgeting</span><span class="tag">tiktoken</span></div>
-        </div>
+        <div class="ch-body"><h2>The Hidden Costs of LLM Calls in Production</h2><p>Semantic caching, model routing by complexity, and context window budgeting. Cut LLM spend from $60k/month to under $6k without changing the product.</p><div class="ch-tags"><span class="tag">Semantic cache</span><span class="tag">Model routing</span><span class="tag">Context budgeting</span><span class="tag">tiktoken</span></div></div>
         <div class="ch-arrow">&rarr;</div>
       </a>
       <a class="chapter-card" href="chapters/chapter-04-multi-agent-orchestration-fault-tolerance.html">
         <div class="ch-num">04</div>
-        <div class="ch-body">
-          <h2>Multi-Agent Orchestration: Designing for Fault Tolerance</h2>
-          <p>Task graphs, SKIPPED state propagation, retry budgets, and compensation rollback for 5-agent incident response pipelines.</p>
-          <div class="ch-tags"><span class="tag">Orchestrator</span><span class="tag">Task graph</span><span class="tag">Compensation</span><span class="tag">asyncio</span><span class="tag">Fault tolerance</span></div>
-        </div>
+        <div class="ch-body"><h2>Multi-Agent Orchestration: Designing for Fault Tolerance</h2><p>Task graphs, SKIPPED state propagation, retry budgets, and compensation rollback for 5-agent incident response pipelines.</p><div class="ch-tags"><span class="tag">Orchestrator</span><span class="tag">Task graph</span><span class="tag">Compensation</span><span class="tag">asyncio</span><span class="tag">Fault tolerance</span></div></div>
         <div class="ch-arrow">&rarr;</div>
       </a>
       <a class="chapter-card" href="chapters/chapter-05-rag-at-scale-single-pdf-to-100m-documents.html">
         <div class="ch-num">05</div>
-        <div class="ch-body">
-          <h2>RAG at Scale: From a Single PDF to 100M Documents</h2>
-          <p>The five bottlenecks that break RAG and the exact fix for each: async workers, GPU embeddings, HNSW indexing, and two-stage reranking.</p>
-          <div class="ch-tags"><span class="tag">HNSW</span><span class="tag">Async ingestion</span><span class="tag">GPU embeddings</span><span class="tag">Reranking</span><span class="tag">Sharding</span></div>
-        </div>
+        <div class="ch-body"><h2>RAG at Scale: From a Single PDF to 100M Documents</h2><p>The five bottlenecks that break RAG and the exact fix for each: async workers, GPU embeddings, HNSW indexing, and two-stage reranking.</p><div class="ch-tags"><span class="tag">HNSW</span><span class="tag">Async ingestion</span><span class="tag">GPU embeddings</span><span class="tag">Reranking</span><span class="tag">Sharding</span></div></div>
         <div class="ch-arrow">&rarr;</div>
       </a>
       <a class="chapter-card" href="chapters/chapter-06-observability-for-ai-systems.html">
         <div class="ch-num">06</div>
-        <div class="ch-body">
-          <h2>Observability for AI Systems: Tracing What You Can't See</h2>
-          <p>OTEL spans, Langfuse traces, retrieval score monitoring, and a debugging path from bad answer to root cause in under 5 minutes.</p>
-          <div class="ch-tags"><span class="tag">OpenTelemetry</span><span class="tag">Langfuse</span><span class="tag">PagerDuty</span><span class="tag">Faithfulness scoring</span></div>
-        </div>
+        <div class="ch-body"><h2>Observability for AI Systems: Tracing What You Can't See</h2><p>OTEL spans, Langfuse traces, retrieval score monitoring, and a debugging path from bad answer to root cause in under 5 minutes.</p><div class="ch-tags"><span class="tag">OpenTelemetry</span><span class="tag">Langfuse</span><span class="tag">PagerDuty</span><span class="tag">Faithfulness scoring</span></div></div>
         <div class="ch-arrow">&rarr;</div>
       </a>
       <a class="chapter-card" href="chapters/chapter-07-tool-use-function-calling-production.html">
         <div class="ch-num">07</div>
-        <div class="ch-body">
-          <h2>Tool Use & Function Calling in Production</h2>
-          <p>A typed tool registry with Pydantic validation, output sanitisation, sandboxing, timeouts, and circuit breakers. Why vague descriptions cause hallucination.</p>
-          <div class="ch-tags"><span class="tag">Function calling</span><span class="tag">Pydantic</span><span class="tag">Tool registry</span><span class="tag">Circuit breakers</span><span class="tag">Output sanitisation</span></div>
-        </div>
+        <div class="ch-body"><h2>Tool Use & Function Calling in Production</h2><p>A typed tool registry with Pydantic validation, output sanitisation, sandboxing, timeouts, and circuit breakers. Why vague descriptions cause hallucination.</p><div class="ch-tags"><span class="tag">Function calling</span><span class="tag">Pydantic</span><span class="tag">Tool registry</span><span class="tag">Circuit breakers</span><span class="tag">Output sanitisation</span></div></div>
         <div class="ch-arrow">&rarr;</div>
       </a>
       <a class="chapter-card" href="chapters/chapter-08-memory-systems-for-agents.html">
         <div class="ch-num">08</div>
-        <div class="ch-body">
-          <h2>Memory Systems for Agents</h2>
-          <p>Four memory types, write-time fact extraction, deduplication, and hybrid retrieval. How mem0-style persistence makes agents feel like colleagues, not strangers.</p>
-          <div class="ch-tags"><span class="tag">Episodic memory</span><span class="tag">Fact extraction</span><span class="tag">Vector retrieval</span><span class="tag">Deduplication</span><span class="tag">mem0</span></div>
-        </div>
+        <div class="ch-body"><h2>Memory Systems for Agents</h2><p>Four memory types, write-time fact extraction, deduplication, and hybrid retrieval. How mem0-style persistence makes agents feel like colleagues, not strangers.</p><div class="ch-tags"><span class="tag">Episodic memory</span><span class="tag">Fact extraction</span><span class="tag">Vector retrieval</span><span class="tag">Deduplication</span><span class="tag">mem0</span></div></div>
         <div class="ch-arrow">&rarr;</div>
       </a>
       <a class="chapter-card" href="chapters/chapter-09-prompt-engineering-at-scale.html">
         <div class="ch-num">09</div>
-        <div class="ch-body">
-          <h2>Prompt Engineering at Scale</h2>
-          <p>A versioned prompt registry, A/B testing via feature flags, eval-gated deployment, and instant rollback. Prompts are production code — treat them that way.</p>
-          <div class="ch-tags"><span class="tag">Prompt registry</span><span class="tag">Semver</span><span class="tag">A/B testing</span><span class="tag">Regression gating</span><span class="tag">Rollback</span></div>
-        </div>
+        <div class="ch-body"><h2>Prompt Engineering at Scale</h2><p>A versioned prompt registry, A/B testing via feature flags, eval-gated deployment, and instant rollback. Prompts are production code &mdash; treat them that way.</p><div class="ch-tags"><span class="tag">Prompt registry</span><span class="tag">Semver</span><span class="tag">A/B testing</span><span class="tag">Regression gating</span><span class="tag">Rollback</span></div></div>
         <div class="ch-arrow">&rarr;</div>
       </a>
       <a class="chapter-card" href="chapters/chapter-10-agent-security-prompt-injection-sandboxing.html">
         <div class="ch-num">10</div>
-        <div class="ch-body">
-          <h2>Agent Security: Prompt Injection, Sandboxing & Least Privilege</h2>
-          <p>Direct and indirect prompt injection, data exfiltration via tool calls, context sandboxing, output guardrails, and per-session permission scopes.</p>
-          <div class="ch-tags"><span class="tag">Prompt injection</span><span class="tag">Sandboxing</span><span class="tag">Least privilege</span><span class="tag">Output guardrails</span><span class="tag">Exfiltration</span></div>
-        </div>
+        <div class="ch-body"><h2>Agent Security: Prompt Injection, Sandboxing & Least Privilege</h2><p>Direct and indirect prompt injection, data exfiltration via tool calls, context sandboxing, output guardrails, and per-session permission scopes.</p><div class="ch-tags"><span class="tag">Prompt injection</span><span class="tag">Sandboxing</span><span class="tag">Least privilege</span><span class="tag">Output guardrails</span><span class="tag">Exfiltration</span></div></div>
         <div class="ch-arrow">&rarr;</div>
       </a>
       <a class="chapter-card" href="chapters/chapter-11-streaming-responses-real-time-agent-output.html">
         <div class="ch-num">11</div>
-        <div class="ch-body">
-          <h2>Streaming Responses & Real-Time Agent Output</h2>
-          <p>SSE token streaming, mid-stream tool call interception, backpressure handling, and graceful reconnection. Perceived latency from 10s to under 1s.</p>
-          <div class="ch-tags"><span class="tag">SSE</span><span class="tag">Token streaming</span><span class="tag">Tool call streaming</span><span class="tag">Backpressure</span><span class="tag">FastAPI</span></div>
-        </div>
+        <div class="ch-body"><h2>Streaming Responses & Real-Time Agent Output</h2><p>SSE token streaming, mid-stream tool call interception, backpressure handling, and graceful reconnection. Perceived latency from 10s to under 1s.</p><div class="ch-tags"><span class="tag">SSE</span><span class="tag">Token streaming</span><span class="tag">Tool call streaming</span><span class="tag">Backpressure</span><span class="tag">FastAPI</span></div></div>
         <div class="ch-arrow">&rarr;</div>
       </a>
       <a class="chapter-card" href="chapters/chapter-12-fine-tuning-vs-prompting.html">
         <div class="ch-num">12</div>
-        <div class="ch-body">
-          <h2>Fine-Tuning vs Prompting: When and How to Fine-Tune</h2>
-          <p>The decision framework for when to fine-tune vs prompt. Eval-driven workflow, LoRA on open-source models, and the five mistakes that sink FT deployments.</p>
-          <div class="ch-tags"><span class="tag">Fine-tuning</span><span class="tag">LoRA</span><span class="tag">Eval-driven</span><span class="tag">Training data</span><span class="tag">Catastrophic forgetting</span></div>
-        </div>
+        <div class="ch-body"><h2>Fine-Tuning vs Prompting: When and How to Fine-Tune</h2><p>The decision framework for when to fine-tune vs prompt. Eval-driven workflow, LoRA on open-source models, and the five mistakes that sink FT deployments.</p><div class="ch-tags"><span class="tag">Fine-tuning</span><span class="tag">LoRA</span><span class="tag">Eval-driven</span><span class="tag">Training data</span><span class="tag">Catastrophic forgetting</span></div></div>
+        <div class="ch-arrow">&rarr;</div>
+      </a>
+      <a class="chapter-card" href="chapters/chapter-13-ai-agent-interview-questions.html">
+        <div class="ch-num">13</div>
+        <div class="ch-body"><h2>AI Agent Interview Questions — How Top Companies Test You</h2><p>8 questions across Google, Meta, Amazon, Anthropic, Cohere, and Scale AI &mdash; each answered with single-user solution, scale-to-millions architecture, and a pros/cons tradeoff table.</p><div class="ch-tags"><span class="tag">Interview prep</span><span class="tag">System design</span><span class="tag">FAANG</span><span class="tag">Agent tradeoffs</span><span class="tag">FDE</span></div></div>
         <div class="ch-arrow">&rarr;</div>
       </a>
     </div>
-
     <div id="stack" class="section-label">Tech Stack</div>
     <div class="stack-row">
       <span class="stack-pill">&#129302; Python 3.10+</span>
@@ -243,7 +183,6 @@
       <span class="stack-pill">&#128297; Kubernetes + KEDA</span>
     </div>
   </div>
-
   <footer>
     <div class="footer-logo">AI Engineering <span>by dhanush</span></div>
     <p>Source on <a href="https://github.com/dhanush-ctrl-ai/ai-engineering-blog" target="_blank">GitHub</a> &middot; Built for backend engineers moving into AI</p>
