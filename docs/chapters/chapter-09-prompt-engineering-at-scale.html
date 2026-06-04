@@ -86,9 +86,7 @@ h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);font-weight:80
   nav{padding:0 20px}.nav-links{display:none}.page-wrap{padding:40px 20px 60px}
   .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}</style></head><body>
 <nav><a href="../index.html" class="nav-logo"><div class="nav-logo-icon">&#129302;</div>AI Engineering</a>
-<ul class="nav-links"><li><a href="../index.html#chapters">Chapters</a></li>
-<li><a href="../index.html#stack">Stack</a></li>
-<li><a href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub</a></li></ul>
+<ul class="nav-links"><li><a href="../index.html#chapters">Chapters</a></li><li><a href="../index.html#stack">Stack</a></li><li><a href="https://github.com/dhanush-ctrl-ai" target="_blank">GitHub</a></li></ul>
 <a href="../index.html#chapters" class="nav-cta">All chapters &rarr;</a></nav>
 <main class="page-wrap"><header class="ch-header">
   <div class="ch-num-label">Chapter 09</div><h1>Prompt Engineering at Scale</h1></header>
@@ -111,6 +109,49 @@ h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);font-weight:80
 <hr>
 
 <h2>Day One: hardcoded prompt strings</h2>
+<div class="diagram-wrap">
+<svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Prompt Registry Deployment Pipeline">
+<title>Prompt Registry: PR with new prompt → Eval harness runs → passes threshold? → Deploy (atomic DB swap) or Block</title>
+<defs>
+  <marker id="ch09-grn" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker>
+  <marker id="ch09-red" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#dc2626"/></marker>
+</defs>
+
+<!-- NEW PROMPT VERSION -->
+<rect x="8" y="82" width="116" height="48" rx="8" fill="#f9f9f9" stroke="#888" stroke-width="1.5"/>
+<text x="66" y="101" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#333">New Prompt v2.4</text>
+<text x="66" y="119" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">PR opened</text>
+<line x1="124" y1="106" x2="146" y2="106" stroke="#a8d010" stroke-width="2" marker-end="url(#ch09-grn)"/>
+
+<!-- EVAL HARNESS -->
+<rect x="148" y="64" width="132" height="84" rx="8" fill="#fefce8" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="214" y="90" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#92400e">Eval Harness</text>
+<text x="214" y="108" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">50 golden cases</text>
+<text x="214" y="124" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">faithfulness scored</text>
+<text x="214" y="140" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">vs baseline compared</text>
+<line x1="280" y1="106" x2="302" y2="106" stroke="#a8d010" stroke-width="2" marker-end="url(#ch09-grn)"/>
+
+<!-- GATE -->
+<rect x="304" y="74" width="120" height="64" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+<text x="364" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#4338ca">Safety Gate</text>
+<text x="364" y="116" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">score ≥ 0.85 AND</text>
+<text x="364" y="132" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">delta ≥ −0.02</text>
+
+<!-- PASS → DEPLOY -->
+<line x1="424" y1="90" x2="476" y2="60" stroke="#16a34a" stroke-width="2" marker-end="url(#ch09-grn)"/>
+<rect x="478" y="34" width="148" height="52" rx="8" fill="#f0fde4" stroke="#16a34a" stroke-width="1.5"/>
+<text x="552" y="56" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#15803d">✓ Deploy</text>
+<text x="552" y="74" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">atomic DB swap — instant</text>
+<text x="468" y="52" font-family="Caveat,cursive" font-size="10" fill="#16a34a">PASS</text>
+
+<!-- FAIL → BLOCK -->
+<line x1="424" y1="122" x2="476" y2="152" stroke="#dc2626" stroke-width="2" marker-end="url(#ch09-red)"/>
+<rect x="478" y="138" width="148" height="52" rx="8" fill="#fff5f5" stroke="#dc2626" stroke-width="1.5"/>
+<text x="552" y="160" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="700" fill="#dc2626">✗ Block PR</text>
+<text x="552" y="178" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">regression detected</text>
+<text x="468" y="150" font-family="Caveat,cursive" font-size="10" fill="#dc2626">FAIL</text>
+</svg>
+</div>
 <pre><code class="language-python"># agent.py - prompt buried in code, no versioning
 SYSTEM_PROMPT = """You are an AI assistant for an engineering wiki.
 Answer questions based on the retrieved context.
