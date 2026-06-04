@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ch08: Memory Systems for Agents - AI Engineering Series</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&family=Caveat:wght@600&display=swap" rel="stylesheet">
+  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f2ed;--surface:#fff;--border:#e2e2da;
+  --text:#111;--muted:#666660;--green:#c8f135;--green-dk:#a8d010;
+  --dot:#d8d8d0;--code-bg:#1e1e2e;--code-text:#cdd6f4;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
+  line-height:1.75;font-size:16px;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;
+  background-image:radial-gradient(circle,var(--dot) 1px,transparent 1px);
+  background-size:28px 28px;pointer-events:none;z-index:0;opacity:.45}
+nav{position:sticky;top:0;z-index:100;background:rgba(242,242,237,.9);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border);
+  padding:0 48px;height:60px;display:flex;align-items:center;
+  justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;
+  font-family:'Syne',sans-serif;font-size:17px;font-weight:800;
+  color:var(--text);text-decoration:none}
+.nav-logo-icon{width:32px;height:32px;background:var(--text);border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:16px}
+.nav-back{font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;
+  border:1.5px solid var(--border);padding:6px 14px;border-radius:8px;
+  background:var(--surface);transition:border-color .15s,color .15s}
+.nav-back:hover{border-color:var(--text);color:var(--text)}
+.page-wrap{position:relative;z-index:1;max-width:780px;margin:0 auto;
+  padding:60px 48px 100px}
+.ch-header{margin-bottom:52px}
+.ch-num-label{font-size:12px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:12px;
+  display:flex;align-items:center;gap:10px}
+.ch-num-label::before{content:"";width:20px;height:2px;
+  background:var(--green);display:inline-block;border-radius:2px}
+h1{font-family:'Syne',sans-serif;font-size:clamp(2rem,5vw,2.9rem);
+  font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:20px}
+.content h2{font-family:'Syne',sans-serif;font-size:1.45rem;font-weight:800;
+  margin:52px 0 14px;letter-spacing:-.02em;
+  padding-bottom:10px;border-bottom:2px solid var(--border)}
+.content h3{font-size:1.05rem;font-weight:700;margin:32px 0 10px}
+.content p{margin-bottom:18px;color:#2a2a2a}
+.content ul,.content ol{margin:0 0 18px 24px}
+.content li{margin-bottom:6px;color:#2a2a2a}
+.content strong{color:var(--text);font-weight:700}
+.content hr{border:none;border-top:1px solid var(--border);margin:40px 0}
+.content blockquote{background:var(--surface);
+  border:1.5px solid var(--border);border-left:4px solid var(--green);
+  border-radius:0 10px 10px 0;padding:16px 20px;margin:24px 0;
+  font-size:.95rem;color:var(--muted)}
+.content table{width:100%;border-collapse:collapse;margin:24px 0;
+  font-size:13.5px;background:var(--surface);
+  border-radius:10px;overflow:hidden;border:1.5px solid var(--border)}
+.content th{background:var(--text);color:#fff;padding:10px 14px;
+  text-align:left;font-weight:700;font-size:12px;letter-spacing:.04em}
+.content td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+.content tr:last-child td{border-bottom:none}
+.content tr:nth-child(even) td{background:#fafaf6}
+.content code{background:#ebebeb;border-radius:4px;
+  padding:2px 6px;font-size:.85rem;font-family:'JetBrains Mono','Fira Code',monospace;
+  color:#c0392b}
+.content pre{background:var(--code-bg);border-radius:12px;
+  padding:24px;margin:24px 0;overflow-x:auto;
+  border:1.5px solid #313244;box-shadow:0 4px 24px rgba(0,0,0,.15)}
+.content pre code{background:none;color:var(--code-text);
+  font-size:.85rem;padding:0;border-radius:0}
+.diagram-wrap{margin:32px 0;background:var(--surface);
+  border:1.5px solid var(--border);border-radius:14px;
+  padding:32px 24px;overflow-x:auto;
+  box-shadow:3px 3px 0 var(--border)}
+.diagram-wrap svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tldr-box{background:#f0fde4;border:1.5px solid #bbf7d0;border-left:4px solid var(--green-dk);
+  border-radius:10px;padding:20px 24px;margin:0 0 40px}
+.tldr-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--green-dk);margin-bottom:10px}
+.tldr-box ul{margin:0 0 0 18px}
+.tldr-box li{font-size:.9rem;color:#1a2e05;margin-bottom:5px}
+.gotcha-box{background:#fff5f5;border:1.5px solid #fecaca;border-left:4px solid #dc2626;
+  border-radius:10px;padding:20px 24px;margin:32px 0}
+.gotcha-box h3{font-size:.85rem;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:#dc2626;margin-bottom:10px}
+.gotcha-box ol{margin:0 0 0 18px}
+.gotcha-box li{font-size:.9rem;color:#450a0a;margin-bottom:6px;line-height:1.6}
+.chapter-nav{display:flex;justify-content:space-between;
+  margin-top:80px;padding-top:32px;border-top:1.5px solid var(--border);gap:16px}
+.ch-nav-btn{text-decoration:none;color:var(--text);
+  border:1.5px solid var(--border);border-radius:10px;
+  padding:14px 20px;background:var(--surface);
+  font-size:13px;font-weight:600;transition:all .15s;max-width:48%}
+.ch-nav-btn:hover{border-color:var(--text);box-shadow:3px 3px 0 var(--text)}
+.ch-nav-next{text-align:right;margin-left:auto}
+.nav-dir{font-size:11px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.07em;margin-bottom:4px}
+@media(max-width:680px){
+  nav{padding:0 20px}.page-wrap{padding:40px 20px 60px}
+  .chapter-nav{flex-direction:column}.ch-nav-btn{max-width:100%}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="../index.html" class="nav-logo">
+    <div class="nav-logo-icon">&#129302;</div>AI Engineering
+  </a>
+  <a href="../index.html" class="nav-back">&larr; All Chapters</a>
+</nav>
+<main class="page-wrap">
+  <header class="ch-header">
+    <div class="ch-num-label">Chapter 08</div>
+    <h1>Memory Systems for Agents</h1>
+  </header>
+  <div class="content">
+<div class="tldr-box">
+<h3>TL;DR</h3>
+<ul>
+<li>Without memory, every agent conversation starts from zero. Engineers repeat context. Quality degrades.</li>
+<li>Four memory types: in-context (conversation buffer), episodic (past interactions), semantic (facts about users and entities), procedural (learned preferences and workflows).</li>
+<li>Day One: a rolling message buffer that keeps the last N turns in the context window.</li>
+<li>Production: mem0-style write-time fact extraction, deduplication, and hybrid retrieval (vector + BM25 + entity graph) at query time.</li>
+<li>Memory is a database. Design it with the same rigour you would apply to any other production datastore.</li>
+</ul>
+</div>
+
+<h2>The stateless agent problem</h2>
+<p>Every LLM call is stateless by default. There is no memory between conversations. When an engineer comes back the next day and asks "did that P1 we discussed get resolved?", the agent has no idea what P1 they mean, who they are, or that any conversation happened at all.</p>
+<p>The naive fix is to put the entire conversation history in the context window. This works until the history grows beyond the context limit, which at GPT-4o's 128k tokens happens faster than you expect once you include system prompt, retrieved chunks, and tool call history.</p>
+<blockquote>A context window is working memory - fast but finite. True agent memory requires a persistent external store that survives across sessions.</blockquote>
+<hr>
+
+<h2>The four types of agent memory</h2>
+
+<div class="diagram-wrap">
+<svg viewBox="0 0 680 260" xmlns="http://www.w3.org/2000/svg">
+<rect x="10" y="20" width="148" height="100" rx="10" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="84" y="46" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#15803d">In-Context</text>
+<text x="84" y="66" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Conversation buffer</text>
+<text x="84" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Last N messages</text>
+<text x="84" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Lost on session end</text>
+<text x="84" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">Fast. Free. Ephemeral.</text>
+<rect x="176" y="20" width="148" height="100" rx="10" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+<text x="250" y="46" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#4338ca">Episodic</text>
+<text x="250" y="66" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">Past interactions</text>
+<text x="250" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">Summarised sessions</text>
+<text x="250" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">Stored in vector DB</text>
+<text x="250" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">"last week you asked..."</text>
+<rect x="342" y="20" width="148" height="100" rx="10" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
+<text x="416" y="46" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#92400e">Semantic</text>
+<text x="416" y="66" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">Facts about entities</text>
+<text x="416" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">User preferences</text>
+<text x="416" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">Team structures</text>
+<text x="416" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">"Riya owns payments"</text>
+<rect x="508" y="20" width="160" height="100" rx="10" fill="#fff5f5" stroke="#fecaca" stroke-width="1.5"/>
+<text x="588" y="46" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#dc2626">Procedural</text>
+<text x="588" y="66" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">Learned workflows</text>
+<text x="588" y="82" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">User's preferred format</text>
+<text x="588" y="98" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">Routing rules</text>
+<text x="588" y="114" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#991b1b">"always page Riya first"</text>
+<!-- Retrieval box -->
+<rect x="240" y="170" width="200" height="60" rx="10" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="340" y="196" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#333">Query-time retrieval</text>
+<text x="340" y="216" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">relevant memories injected into context</text>
+<line x1="84" y1="120" x2="260" y2="170" stroke="#a8d010" stroke-width="1" stroke-dasharray="4,2"/>
+<line x1="250" y1="120" x2="300" y2="170" stroke="#a8d010" stroke-width="1" stroke-dasharray="4,2"/>
+<line x1="416" y1="120" x2="360" y2="170" stroke="#a8d010" stroke-width="1" stroke-dasharray="4,2"/>
+<line x1="588" y1="120" x2="420" y2="170" stroke="#a8d010" stroke-width="1" stroke-dasharray="4,2"/>
+</svg>
+</div>
+
+<h2>Day One: rolling context buffer</h2>
+<pre><code class="language-python"># memory/simple.py
+from collections import deque
+
+class RollingBuffer:
+    def __init__(self, max_messages: int = 20):
+        self.buffer = deque(maxlen=max_messages)
+
+    def add(self, role: str, content: str):
+        self.buffer.append({"role": role, "content": content})
+
+    def get_messages(self) -> list[dict]:
+        return list(self.buffer)
+
+# Usage
+memory = RollingBuffer(max_messages=20)
+memory.add("user", "How do I restart the payment service?")
+memory.add("assistant", "Run: kubectl rollout restart deployment/payment-svc")
+
+# On next turn, history injected into context automatically
+messages = [{"role":"system","content":SYSTEM_PROMPT}] + memory.get_messages()
+response = client.chat.completions.create(model="gpt-4o", messages=messages)</code></pre>
+
+<p>This works for a single session. It has three hard limits: it forgets everything when the session ends, it blows up the context window with long conversations, and it stores no facts about the user across sessions.</p>
+<hr>
+
+<h2>Production: mem0-style persistent memory</h2>
+<p>The production approach has two phases. At <strong>write time</strong>, when a conversation ends, an LLM extracts structured facts from the session and stores them deduplicated into a memory store. At <strong>read time</strong>, before each agent response, relevant memories are retrieved and injected into the context window as a compact memory block.</p>
+
+<div class="diagram-wrap">
+<svg viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="arr-m8" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#a8d010"/></marker></defs>
+<!-- Write path -->
+<text x="10" y="22" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#666">WRITE PATH (session end)</text>
+<rect x="10" y="32" width="110" height="44" rx="8" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="65" y="51" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#333">Raw Conversation</text>
+<text x="65" y="68" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">full turn history</text>
+<line x1="120" y1="54" x2="148" y2="54" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m8)"/>
+<rect x="150" y="32" width="120" height="44" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+<text x="210" y="51" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#4338ca">Fact Extractor LLM</text>
+<text x="210" y="68" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">structured JSON facts</text>
+<line x1="270" y1="54" x2="298" y2="54" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m8)"/>
+<rect x="300" y="32" width="120" height="44" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
+<text x="360" y="51" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#92400e">Deduplicator</text>
+<text x="360" y="68" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#78350f">merge + update existing</text>
+<line x1="420" y1="54" x2="448" y2="54" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m8)"/>
+<rect x="450" y="32" width="120" height="44" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="510" y="47" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Memory Store</text>
+<text x="510" y="62" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">Vector DB + BM25 + Graph</text>
+<text x="510" y="76" text-anchor="middle" font-family="Caveat,cursive" font-size="9" fill="#166534">Postgres entity store</text>
+<!-- Read path -->
+<text x="10" y="122" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#666">READ PATH (query time)</text>
+<rect x="10" y="132" width="110" height="44" rx="8" fill="#f9f9f9" stroke="#e2e2da" stroke-width="1.5"/>
+<text x="65" y="151" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#333">New Query</text>
+<text x="65" y="168" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#666">"what about the P1?"</text>
+<line x1="120" y1="154" x2="448" y2="62" stroke="#a8d010" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arr-m8)"/>
+<line x1="510" y1="76" x2="510" y2="132" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m8)"/>
+<rect x="450" y="132" width="120" height="44" rx="8" fill="#f0fde4" stroke="#bbf7d0" stroke-width="1.5"/>
+<text x="510" y="151" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#15803d">Hybrid Retrieval</text>
+<text x="510" y="168" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#166534">top-k relevant facts</text>
+<line x1="450" y1="154" x2="288" y2="154" stroke="#a8d010" stroke-width="1.5" marker-end="url(#arr-m8)"/>
+<rect x="150" y="132" width="136" height="44" rx="8" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.5"/>
+<text x="218" y="151" text-anchor="middle" font-family="Caveat,cursive" font-size="12" font-weight="600" fill="#4338ca">Context Injection</text>
+<text x="218" y="168" text-anchor="middle" font-family="Caveat,cursive" font-size="10" fill="#4338ca">memory block in prompt</text>
+</svg>
+</div>
+
+<pre><code class="language-python"># memory/production.py
+import json
+from openai import OpenAI
+from qdrant_client import QdrantClient
+
+client = OpenAI()
+qdrant = QdrantClient(url="http://localhost:6333")
+
+EXTRACT_PROMPT = """Extract structured facts from this conversation.
+Return a JSON array of fact objects. Each fact must have:
+- "fact": the factual statement (concise, third-person)
+- "category": one of [user_preference, entity_relationship, action_taken, system_state]
+- "entities": list of entity names mentioned
+- "confidence": 0.0-1.0
+
+Only extract facts that would be useful in future conversations.
+Conversation:
+{conversation}"""
+
+def extract_facts(conversation: list[dict]) -> list[dict]:
+    """Write path: extract structured facts from a finished session."""
+    text = "\n".join(f"{m['role'].upper()}: {m['content']}" for m in conversation)
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",   # cheap model for extraction
+        messages=[{"role":"user","content": EXTRACT_PROMPT.format(conversation=text)}],
+        response_format={"type":"json_object"},
+    )
+    data = json.loads(response.choices[0].message.content)
+    return data.get("facts", [])
+
+def store_facts(facts: list[dict], user_id: str):
+    """Deduplicate and store facts in the memory store."""
+    for fact in facts:
+        if fact.get("confidence", 0) < 0.7:
+            continue  # skip low-confidence extractions
+        embedding = client.embeddings.create(
+            model="text-embedding-3-small", input=fact["fact"]
+        ).data[0].embedding
+        # Upsert: if very similar fact exists (sim > 0.95), update instead of duplicate
+        qdrant.upsert(collection_name=f"memory_{user_id}", points=[{
+            "id": generate_fact_id(fact["fact"]),
+            "vector": embedding,
+            "payload": {**fact, "user_id": user_id, "created_at": now_iso()}
+        }])
+
+def retrieve_memories(query: str, user_id: str, top_k: int = 5) -> str:
+    """Read path: retrieve relevant memories as a formatted context block."""
+    q_emb = client.embeddings.create(model="text-embedding-3-small", input=query).data[0].embedding
+    results = qdrant.search(
+        collection_name=f"memory_{user_id}",
+        query_vector=q_emb,
+        limit=top_k,
+        score_threshold=0.72,
+    )
+    if not results:
+        return ""
+    facts = [r.payload["fact"] for r in results]
+    return "## What I remember about you:\n" + "\n".join(f"- {f}" for f in facts)
+
+def build_context(query: str, user_id: str, system_prompt: str) -> list[dict]:
+    memories = retrieve_memories(query, user_id)
+    system = system_prompt + ("\n\n" + memories if memories else "")
+    return [{"role": "system", "content": system}]</code></pre>
+
+<h2>Day One vs Production</h2>
+<table>
+<thead><tr><th>Dimension</th><th>Day One</th><th>Production</th></tr></thead>
+<tbody>
+<tr><td>Persistence</td><td>Lost at session end</td><td>Survives across sessions and deployments</td></tr>
+<tr><td>Storage</td><td>Context window (max ~80k tokens)</td><td>Unlimited external store</td></tr>
+<tr><td>Memory type</td><td>Raw messages</td><td>Structured extracted facts</td></tr>
+<tr><td>Retrieval</td><td>All-or-nothing (full buffer)</td><td>Relevant-only (vector similarity)</td></tr>
+<tr><td>Deduplication</td><td>None</td><td>Write-time merge on high-similarity facts</td></tr>
+<tr><td>User isolation</td><td>None - one buffer per instance</td><td>Per-user namespaced collection</td></tr>
+</tbody>
+</table>
+
+<div class="gotcha-box">
+<h3>&#9888; Common Mistakes &amp; Gotchas</h3>
+<ol>
+<li><strong>Storing raw messages instead of extracted facts.</strong> A 50-turn conversation compresses to 8-12 facts. Storing raw messages bloats your vector DB and retrieves irrelevant context. Always extract at write time.</li>
+<li><strong>No deduplication.</strong> Without deduplication, every session adds new facts even if they contradict old ones. "User prefers Python" stored 12 times is useless and confusing. Check similarity before inserting.</li>
+<li><strong>Retrieving too many memories.</strong> Injecting 20 memory facts into every prompt is expensive and noisy. Use a similarity threshold (0.72+) and cap at 5-7 facts. Irrelevant memories hurt more than no memories.</li>
+<li><strong>Treating memory as infallible.</strong> Extracted facts can be wrong. The LLM misinterprets sarcasm, hypotheticals, and quoted speech as facts. Always store confidence and filter below 0.70.</li>
+<li><strong>Not expiring stale memories.</strong> "Riya owns the payments team" might have been true 6 months ago. Memories need a TTL or a staleness score that degrades over time.</li>
+</ol>
+</div>
+
+  <nav class="chapter-nav">
+    <a class="ch-nav-btn" href="chapter-07-tool-use-function-calling-production.html"><div class="nav-dir">&larr; Previous</div>Tool Use & Function Calling in Production</a>
+    <a class="ch-nav-btn ch-nav-next" href="chapter-09-prompt-engineering-at-scale.html"><div class="nav-dir">Next &rarr;</div>Prompt Engineering at Scale</a>
+  </nav>
+  </div>
+</main>
+</body>
+</html>
